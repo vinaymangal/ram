@@ -233,6 +233,20 @@
         const userInfo = document.getElementById('userInfo');
         const googleSignInButton = document.getElementById('googleSignInButton');
 
+        // Set default settings
+        const defaultSettings = {
+            blinkSpeed: '400', // 0.4s
+            fontSize: '400',   // 400px
+            bgColor: '#ffffe0' // Light Yellow
+        };
+
+        // Apply default settings
+        blinkSpeedSelect.value = defaultSettings.blinkSpeed;
+        fontSizeSelect.value = defaultSettings.fontSize;
+        bgColorSelect.value = defaultSettings.bgColor;
+        text.style.fontSize = defaultSettings.fontSize + 'px';
+        document.body.style.backgroundColor = defaultSettings.bgColor;
+
         // Format date as YYYY-MM-DD
         function getFormattedDate(date) {
             return date.toISOString().split('T')[0];
@@ -288,15 +302,23 @@
             userRef.get().then(doc => {
                 if (doc.exists && doc.data().settings) {
                     const settings = doc.data().settings;
-                    blinkSpeedSelect.value = settings.blinkSpeed || '400';
-                    fontSizeSelect.value = settings.fontSize || '450';
-                    bgColorSelect.value = settings.bgColor || '#ffffff';
+                    blinkSpeedSelect.value = settings.blinkSpeed || defaultSettings.blinkSpeed;
+                    fontSizeSelect.value = settings.fontSize || defaultSettings.fontSize;
+                    bgColorSelect.value = settings.bgColor || defaultSettings.bgColor;
                     text.style.fontSize = fontSizeSelect.value + 'px';
                     document.body.style.backgroundColor = bgColorSelect.value;
                     if (isBlinking) {
                         clearInterval(blinkInterval);
                         blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
                     }
+                } else {
+                    // If no settings exist, apply defaults and save them
+                    blinkSpeedSelect.value = defaultSettings.blinkSpeed;
+                    fontSizeSelect.value = defaultSettings.fontSize;
+                    bgColorSelect.value = defaultSettings.bgColor;
+                    text.style.fontSize = defaultSettings.fontSize + 'px';
+                    document.body.style.backgroundColor = defaultSettings.bgColor;
+                    updateFirestore();
                 }
             }).catch(error => {
                 console.error('Error loading settings:', error);
@@ -350,10 +372,12 @@
                 user = result.user;
                 userInfo.textContent = `Welcome, ${user.displayName} | Sign Out`;
                 userInfo.style.cursor = 'pointer';
+                googleSignInButton.style.display = 'none'; // Hide the Sign-In button after login
                 userInfo.addEventListener('click', () => {
                     auth.signOut().then(() => {
                         user = null;
                         userInfo.textContent = '';
+                        googleSignInButton.style.display = 'block'; // Show the Sign-In button after sign-out
                         mala = 0;
                         count = 0;
                         totalMala = 0;
@@ -364,6 +388,12 @@
                         totalMalaDisplay.textContent = '0';
                         totalCountDisplay.textContent = '0';
                         dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        // Reset to default settings on sign-out
+                        blinkSpeedSelect.value = defaultSettings.blinkSpeed;
+                        fontSizeSelect.value = defaultSettings.fontSize;
+                        bgColorSelect.value = defaultSettings.bgColor;
+                        text.style.fontSize = defaultSettings.fontSize + 'px';
+                        document.body.style.backgroundColor = defaultSettings.bgColor;
                     }).catch(error => {
                         console.error('Sign-Out Error:', error);
                         alert('Failed to sign out: ' + error.message);
@@ -382,9 +412,11 @@
             if (user) {
                 userInfo.textContent = `Welcome, ${user.displayName} | Sign Out`;
                 userInfo.style.cursor = 'pointer';
+                googleSignInButton.style.display = 'none'; // Hide the Sign-In button if user is already logged in
                 loadUserData();
             } else {
                 userInfo.textContent = '';
+                googleSignInButton.style.display = 'block'; // Show the Sign-In button if user is not logged in
             }
         });
 
