@@ -40,13 +40,15 @@
         }
         #counterContainer {
             position: fixed;
-            top: 200px;
+            top: 250px; /* Adjusted to ensure it appears below the buttons */
             right: 10px;
             background-color: rgba(255, 255, 255, 0.9);
             padding: 10px;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             z-index: 1000;
+            font-size: 14px;
+            color: #666;
         }
         button, select {
             padding: 8px;
@@ -105,6 +107,12 @@
             <option value="#000000">Black</option>
             <option value="#1a1a1a">Dark Gray</option>
             <option value="#ffffe0">Light Yellow</option>
+            <option value="#e6e6fa">Lavender</option>
+            <option value="#f5f5dc">Beige</option>
+            <option value="#e0ffff">Light Cyan</option>
+            <option value="#f0e68c">Khaki</option>
+            <option value="#fff0f5">Lavender Blush</option>
+            <option value="#f8f8ff">Ghost White</option>
         </select>
     </div>
     <div id="counterContainer">
@@ -135,7 +143,7 @@
         let blinkInterval;
         let isBlinking = true;
 
-        // Load saved settings
+        // Load saved settings from localStorage or use defaults
         const savedBlinkSpeed = localStorage.getItem('blinkSpeed') || '400';
         const savedFontSize = localStorage.getItem('fontSize') || '450';
         const savedBgColor = localStorage.getItem('bgColor') || '#ffffff';
@@ -176,7 +184,9 @@
         let fullscreenButton = document.getElementById('fullscreenButton');
         fullscreenButton.addEventListener('click', function() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
                 fullscreenButton.textContent = 'Exit Full Screen';
             } else {
                 document.exitFullscreen();
@@ -217,6 +227,38 @@
                 }
             }
         });
+
+        // Prevent screen sleep/rest mode while blinking
+        let wakeLock = null;
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Wake Lock is active');
+                }
+            } catch (err) {
+                console.log(`Wake Lock failed: ${err.message}`);
+            }
+        }
+
+        async function releaseWakeLock() {
+            if (wakeLock !== null) {
+                await wakeLock.release();
+                wakeLock = null;
+                console.log('Wake Lock released');
+            }
+        }
+
+        toggleButton.addEventListener('click', async function() {
+            if (isBlinking) {
+                await requestWakeLock();
+            } else {
+                await releaseWakeLock();
+            }
+        });
+
+        requestWakeLock();
+        window.addEventListener('unload', releaseWakeLock);
     </script>
 </body>
 </html>
