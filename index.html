@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>राम नाम खाता</title>
     <style>
+        /* General body styling */
         body {
             display: flex;
             flex-direction: column;
@@ -18,63 +19,55 @@
             box-sizing: border-box;
         }
 
+        /* Main content styling */
         #mainContent {
             text-align: center;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            padding-right: 160px; /* Space for controls on desktop */
         }
 
         .blink {
-            font-size: clamp(100px, 20vw, 450px);
+            font-size: clamp(100px, 20vw, 450px); /* Responsive font size */
             font-weight: bold;
-            color: #ff0000;
-            display: inline-block;
-            padding: 20px;
+            color: #ff0000; /* Bright red for emphasis */
         }
 
-        #controlsContainer {
+        /* Controls container styling */
+        #controls {
             position: fixed;
             top: 10px;
             right: 10px;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            z-index: 10;
+            flex-direction: column; /* Stack vertically */
+            gap: 10px; /* Space between elements */
+            max-width: 150px; /* Reasonable width for desktop */
         }
 
-        #buttonContainer {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        #counterContainer {
+        /* Button and select styling */
+        button, select {
+            background: none; /* No background color */
+            border: 1px solid #ccc; /* Light border for definition */
+            color: #666; /* Light gray text */
+            padding: 5px;
+            text-align: center;
+            cursor: pointer;
             font-size: 14px;
-            color: #666;
+        }
+
+        /* Counter styling */
+        #counter {
+            color: #666; /* Light gray text */
+            font-size: 12px;
             text-align: center;
         }
 
-        button, select {
-            color: #888;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            background-color: #f9f9f9;
-            cursor: pointer;
-        }
-
-        button:hover, select:hover {
-            background-color: #e0e0e0;
-        }
-
+        /* Header and paragraph styling */
         h1 {
             font-size: 28px;
-            color: #999999;
+            color: #999999; /* Light gray for subtlety */
         }
 
         p {
@@ -82,29 +75,19 @@
             color: #999999;
         }
 
-        /* Mobile Optimization */
+        /* Mobile optimization */
         @media (max-width: 600px) {
-            #controlsContainer {
-                position: fixed;
-                top: auto;
-                bottom: 10px;
-                left: 10px;
-                right: 10px;
-                width: auto;
+            #mainContent {
+                padding-right: 110px; /* Adjusted space for controls on mobile */
             }
 
-            #buttonContainer {
-                justify-content: center;
-            }
-
-            #counterContainer {
-                margin-top: 10px;
+            #controls {
+                max-width: 100px; /* Narrower for mobile */
             }
 
             button, select {
-                padding: 12px;
-                font-size: 16px;
-                min-width: 80px;
+                font-size: 12px; /* Smaller text */
+                padding: 3px; /* Reduced padding */
             }
 
             h1 {
@@ -112,18 +95,6 @@
             }
 
             p {
-                font-size: 14px;
-            }
-        }
-
-        /* Desktop Styling */
-        @media (min-width: 601px) {
-            #controlsContainer {
-                width: 200px;
-            }
-
-            button, select {
-                padding: 8px;
                 font-size: 14px;
             }
         }
@@ -135,45 +106,37 @@
         <p>राम नाम बैंक में राम नाम जप का खाता खोलो और नाम संख्य जमा करो</p>
         <div class="blink">राम</div>
     </div>
-    <div id="controlsContainer">
-        <div id="buttonContainer">
-            <button id="fullscreenButton">Full Screen</button>
-            <button id="toggleBlink">Stop Blinking</button>
-            <select id="blinkSpeed">
-                <option value="100">0.1s</option>
-                <option value="200">0.2s</option>
-                <option value="300">0.3s</option>
-                <option value="400">0.4s</option>
-                <option value="500">0.5s</option>
-                <option value="600">0.6s</option>
-                <option value="700">0.7s</option>
-                <option value="800">0.8s</option>
-                <option value="900">0.9s</option>
-                <option value="1000">1.0s</option>
-            </select>
-            <select id="fontSize">
-                <option value="350">350px</option>
-                <option value="400">400px</option>
-                <option value="450">450px</option>
-                <option value="500">500px</option>
-                <option value="550">550px</option>
-            </select>
-            <select id="bgColor">
-                <option value="#ffffff">White</option>
-                <option value="#f0f0f0">Light Gray</option>
-                <option value="#d3d3d3">Gray</option>
-                <option value="#000000">Black</option>
-                <option value="#1a1a1a">Dark Gray</option>
-                <option value="#ffffe0">Light Yellow</option>
-                <option value="#e6e6fa">Lavender</option>
-                <option value="#f5f5dc">Beige</option>
-                <option value="#e0ffff">Light Cyan</option>
-                <option value="#f0e68c">Khaki</option>
-                <option value="#fff0f5">Lavender Blush</option>
-                <option value="#f8f8ff">Ghost White</option>
-            </select>
-        </div>
-        <div id="counterContainer">
+    <div id="controls">
+        <button id="fullscreenButton">Full Screen</button>
+        <button id="toggleBlink">Stop Blinking</button>
+        <select id="blinkSpeed">
+            <option value="100">0.1s</option>
+            <option value="200">0.2s</option>
+            <option value="300">0.3s</option>
+            <option value="400">0.4s</option>
+            <option value="500">0.5s</option>
+            <option value="600">0.6s</option>
+            <option value="700">0.7s</option>
+            <option value="800">0.8s</option>
+            <option value="900">0.9s</option>
+            <option value="1000">1.0s</option>
+        </select>
+        <select id="fontSize">
+            <option value="350">350px</option>
+            <option value="400">400px</option>
+            <option value="450">450px</option>
+            <option value="500">500px</option>
+            <option value="550">550px</option>
+        </select>
+        <select id="bgColor">
+            <option value="#ffffff">White</option>
+            <option value="#f0f0f0">Light Gray</option>
+            <option value="#d3d3d3">Gray</option>
+            <option value="#000000">Black</option>
+            <option value="#1a1a1a">Dark Gray</option>
+            <option value="#ffffe0">Light Yellow</option>
+        </select>
+        <div id="counter">
             <p id="dateDisplay"></p>
             <p>Mala: <span id="malaCount">0</span></p>
             <p>Count: <span id="countDisplay">0</span></p>
@@ -202,7 +165,7 @@
         let blinkInterval;
         let isBlinking = true;
 
-        // Load saved settings from localStorage or use defaults
+        // Load saved settings or use defaults
         const savedBlinkSpeed = localStorage.getItem('blinkSpeed') || '400';
         const savedFontSize = localStorage.getItem('fontSize') || '450';
         const savedBgColor = localStorage.getItem('bgColor') || '#ffffff';
@@ -215,44 +178,37 @@
         fontSizeSelect.value = savedFontSize;
         bgColorSelect.value = savedBgColor;
 
-        // Apply saved font size if available, else use CSS clamp
-        if (savedFontSize) {
-            text.style.fontSize = savedFontSize + 'px';
-        }
+        // Apply saved settings
+        if (savedFontSize) text.style.fontSize = savedFontSize + 'px';
         document.body.style.backgroundColor = savedBgColor;
         blinkInterval = setInterval(blink, parseInt(savedBlinkSpeed));
 
         // Display today's date
         const today = new Date();
-        const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('dateDisplay').textContent = today.toLocaleDateString('en-US', dateOptions);
+        document.getElementById('dateDisplay').textContent = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
         // Toggle blinking
-        let toggleButton = document.getElementById('toggleBlink');
-        toggleButton.addEventListener('click', function() {
+        document.getElementById('toggleBlink').addEventListener('click', function() {
             if (isBlinking) {
                 clearInterval(blinkInterval);
                 text.style.visibility = 'visible';
                 isBlinking = false;
-                toggleButton.textContent = 'Start Blinking';
+                this.textContent = 'Start Blinking';
             } else {
                 blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
                 isBlinking = true;
-                toggleButton.textContent = 'Stop Blinking';
+                this.textContent = 'Stop Blinking';
             }
         });
 
         // Full-screen logic
-        let fullscreenButton = document.getElementById('fullscreenButton');
-        fullscreenButton.addEventListener('click', function() {
+        document.getElementById('fullscreenButton').addEventListener('click', function() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`Error attempting to enable full-screen mode: ${err.message}`);
-                });
-                fullscreenButton.textContent = 'Exit Full Screen';
+                document.documentElement.requestFullscreen();
+                this.textContent = 'Exit Full Screen';
             } else {
                 document.exitFullscreen();
-                fullscreenButton.textContent = 'Full Screen';
+                this.textContent = 'Full Screen';
             }
         });
 
@@ -276,51 +232,6 @@
             document.body.style.backgroundColor = this.value;
             localStorage.setItem('bgColor', this.value);
         });
-
-        // Stop blinking when window loses focus
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'hidden') {
-                if (isBlinking) {
-                    clearInterval(blinkInterval);
-                }
-            } else {
-                if (isBlinking) {
-                    blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
-                }
-            }
-        });
-
-        // Prevent screen sleep/rest mode while blinking
-        let wakeLock = null;
-        async function requestWakeLock() {
-            try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('Wake Lock is active');
-                }
-            } catch (err) {
-                console.log(`Wake Lock failed: ${err.message}`);
-            }
-        }
-
-        async function releaseWakeLock() {
-            if (wakeLock !== null) {
-                await wakeLock.release();
-                wakeLock = null;
-                console.log('Wake Lock released');
-            }
-        }
-
-        toggleButton.addEventListener('click', async function() {
-            if (isBlinking) {
-                await requestWakeLock();
-            } else {
-                await releaseWakeLock();
-            }
-        });
-
-        requestWakeLock();
-        window.addEventListener('unload', releaseWakeLock);
     </script>
 </body>
 </html>
