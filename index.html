@@ -206,6 +206,15 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // Enable Firestore offline persistence
+        db.enablePersistence().catch(err => {
+            if (err.code === 'failed-precondition') {
+                console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+            } else if (err.code === 'unimplemented') {
+                console.warn('The current browser does not support offline persistence.');
+            }
+        });
+
         // Google Sign-In Provider
         const provider = new firebase.auth.GoogleAuthProvider();
 
@@ -240,12 +249,45 @@
             bgColor: '#ffffe0' // Light Yellow
         };
 
-        // Apply default settings
-        blinkSpeedSelect.value = defaultSettings.blinkSpeed;
-        fontSizeSelect.value = defaultSettings.fontSize;
-        bgColorSelect.value = defaultSettings.bgColor;
-        text.style.fontSize = defaultSettings.fontSize + 'px';
-        document.body.style.backgroundColor = defaultSettings.bgColor;
+        // Load settings from local storage as a fallback
+        const loadLocalSettings = () => {
+            const settings = {
+                blinkSpeed: localStorage.getItem('blinkSpeed') || defaultSettings.blinkSpeed,
+                fontSize: localStorage.getItem('fontSize') || defaultSettings.fontSize,
+                bgColor: localStorage.getItem('bgColor') || defaultSettings.bgColor
+            };
+            blinkSpeedSelect.value = settings.blinkSpeed;
+            fontSizeSelect.value = settings.fontSize;
+            bgColorSelect.value = settings.bgColor;
+            text.style.fontSize = settings.fontSize + 'px';
+            document.body.style.backgroundColor = settings.bgColor;
+        };
+
+        // Load mala and count from local storage as a fallback
+        const loadLocalCounts = () => {
+            mala = parseInt(localStorage.getItem(`mala_${currentDate}_${user?.uid}`)) || 0;
+            count = parseInt(localStorage.getItem(`count_${currentDate}_${user?.uid}`)) || 0;
+            malaCountDisplay.textContent = mala;
+            countDisplay.textContent = count;
+        };
+
+        // Save settings to local storage
+        const saveLocalSettings = () => {
+            localStorage.setItem('blinkSpeed', blinkSpeedSelect.value);
+            localStorage.setItem('fontSize', fontSizeSelect.value);
+            localStorage.setItem('bgColor', bgColorSelect.value);
+        };
+
+        // Save mala and count to local storage
+        const saveLocalCounts = () => {
+            if (user) {
+                localStorage.setItem(`mala_${currentDate}_${user.uid}`, mala);
+                localStorage.setItem(`count_${currentDate}_${user.uid}`, count);
+            }
+        };
+
+        // Apply default settings on initial load
+        loadLocalSettings();
 
         // Format date as YYYY-MM-DD
         function getFormattedDate(date) {
@@ -261,9 +303,11 @@
                     mala++;
                     count = 0;
                     updateFirestore();
+                    saveLocalCounts();
                 }
                 countDisplay.textContent = count;
                 malaCountDisplay.textContent = mala;
+                saveLocalCounts();
             }
         }
 
@@ -279,7 +323,10 @@
                 }
             }, { merge: true }).catch(error => {
                 console.error('Error saving settings:', error);
-                alert('Failed to save settings: ' + error.message);
+                // Do not alert for offline errors
+                if (!error.message.includes('offline')) {
+                    alert('Failed to save settings: ' + error.message);
+                }
             });
 
             userRef.collection('dailyCounts').doc(currentDate).set({
@@ -289,7 +336,9 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).catch(error => {
                 console.error('Error saving daily counts:', error);
-                alert('Failed to save daily counts: ' + error.message);
+                if (!error.message.includes('offline')) {
+                    alert('Failed to save daily counts: ' + error.message);
+                }
             });
         }
 
@@ -307,6 +356,7 @@
                     bgColorSelect.value = settings.bgColor || defaultSettings.bgColor;
                     text.style.fontSize = fontSizeSelect.value + 'px';
                     document.body.style.backgroundColor = bgColorSelect.value;
+                    saveLocalSettings();
                     if (isBlinking) {
                         clearInterval(blinkInterval);
                         blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
@@ -318,11 +368,16 @@
                     bgColorSelect.value = defaultSettings.bgColor;
                     text.style.fontSize = defaultSettings.fontSize + 'px';
                     document.body.style.backgroundColor = defaultSettings.bgColor;
+                    saveLocalSettings();
                     updateFirestore();
                 }
             }).catch(error => {
                 console.error('Error loading settings:', error);
-                alert('Failed to load settings: ' + error.message);
+                // Use local settings if Firestore fails
+                loadLocalSettings();
+                if (!error.message.includes('offline')) {
+                    alert('Failed to load settings: ' + error.message);
+                }
             });
 
             // Load daily counts and history
@@ -337,6 +392,7 @@
                         count = data.count || 0;
                         malaCountDisplay.textContent = mala;
                         countDisplay.textContent = count;
+                        saveLocalCounts();
                     }
                     totalMala += data.mala || 0;
                     totalCount += (data.count || 0) + (data.mala || 0) * 108;
@@ -346,7 +402,11 @@
                 totalCountDisplay.textContent = totalCount;
             }).catch(error => {
                 console.error('Error loading history:', error);
-                alert('Failed to load history: ' + error.message);
+                // Use local counts if Firestore fails
+                loadLocalCounts();
+                if (!error.message.includes('offline')) {
+                    alert('Failed to load history: ' + error.message);
+                }
             });
 
             dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -361,6 +421,7 @@
                 count = 0;
                 malaCountDisplay.textContent = mala;
                 countDisplay.textContent = count;
+                saveLocalCounts();
                 updateFirestore();
                 loadUserData();
             }
@@ -394,6 +455,7 @@
                         bgColorSelect.value = defaultSettings.bgColor;
                         text.style.fontSize = defaultSettings.fontSize + 'px';
                         document.body.style.backgroundColor = defaultSettings.bgColor;
+                        saveLocalSettings();
                     }).catch(error => {
                         console.error('Sign-Out Error:', error);
                         alert('Failed to sign out: ' + error.message);
@@ -414,6 +476,7 @@
                 userInfo.style.cursor = 'pointer';
                 googleSignInButton.style.display = 'none'; // Hide the Sign-In button if user is already logged in
                 loadUserData();
+                loadLocalCounts(); // Load local counts immediately
             } else {
                 userInfo.textContent = '';
                 googleSignInButton.style.display = 'block'; // Show the Sign-In button if user is not logged in
@@ -456,6 +519,7 @@
             if (user) {
                 updateFirestore();
             }
+            saveLocalSettings();
             if (isBlinking) {
                 clearInterval(blinkInterval);
                 blinkInterval = setInterval(blink, parseInt(this.value));
@@ -468,6 +532,7 @@
             if (user) {
                 updateFirestore();
             }
+            saveLocalSettings();
         });
 
         // Background color control
@@ -476,6 +541,7 @@
             if (user) {
                 updateFirestore();
             }
+            saveLocalSettings();
         });
 
         // Stop blinking when window loses focus
