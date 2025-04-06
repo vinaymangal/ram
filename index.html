@@ -265,6 +265,7 @@
                 }
             }, { merge: true }).catch(error => {
                 console.error('Error saving settings:', error);
+                alert('Failed to save settings: ' + error.message);
             });
 
             userRef.collection('dailyCounts').doc(currentDate).set({
@@ -274,6 +275,7 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).catch(error => {
                 console.error('Error saving daily counts:', error);
+                alert('Failed to save daily counts: ' + error.message);
             });
         }
 
@@ -298,6 +300,7 @@
                 }
             }).catch(error => {
                 console.error('Error loading settings:', error);
+                alert('Failed to load settings: ' + error.message);
             });
 
             // Load daily counts and history
@@ -321,6 +324,7 @@
                 totalCountDisplay.textContent = totalCount;
             }).catch(error => {
                 console.error('Error loading history:', error);
+                alert('Failed to load history: ' + error.message);
             });
 
             dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -362,11 +366,13 @@
                         dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                     }).catch(error => {
                         console.error('Sign-Out Error:', error);
+                        alert('Failed to sign out: ' + error.message);
                     });
                 });
                 loadUserData();
             }).catch(error => {
                 console.error('Sign-In Error:', error);
+                alert('Failed to sign in: ' + error.message);
             });
         });
 
