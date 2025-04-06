@@ -10,7 +10,7 @@ A simple web application that displays the name "राम" (Ram) in Hindi, with
 - **Persistent Settings**: Your preferences are saved and reloaded using localStorage.
 
 ## Live Demo
-Visit the live site: [https://vinaymangal.github.io/RamNaam/](https://vinaymangal.github.io/RamNaam/)
+Visit the live site: [https://vinaymangal.github.io/ram/](https://vinaymangal.github.io/ram)
 
 ## How to Use
 1. Open the website in your browser.
