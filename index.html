@@ -202,4 +202,227 @@
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyDX
+            apiKey: "AIzaSyDX4Bm3HBOMTZ2E9f_pPUKykzANumG6Bpg",
+            authDomain: "ramnaam1.firebaseapp.com",
+            projectId: "ramnaam1",
+            storageBucket: "ramnaam1.firebasestorage.app",
+            messagingSenderId: "399389434845",
+            appId: "1:399389434845:web:bf67b08826207481054c34",
+            measurementId: "G-SGKLGDFFMV"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Enable Firestore offline persistence
+        db.enablePersistence().catch(err => {
+            if (err.code === 'failed-precondition') {
+                console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+            } else if (err.code === 'unimplemented') {
+                console.warn('The current browser does not support offline persistence.');
+            }
+        });
+
+        // Google Sign-In Provider
+        const provider = new firebase.auth.GoogleAuthProvider();
+
+        // Blinking logic
+        let text = document.querySelector('.blink');
+        let mala = 0;
+        let count = 0;
+        let totalMala = 0;
+        let totalCount = 0;
+        let blinkInterval;
+        let isBlinking = true;
+        let user = null;
+        let currentDate = getFormattedDate(new Date());
+
+        // Elements
+        const blinkSpeedSelect = document.getElementById('blinkSpeed');
+        const fontSizeSelect = document.getElementById('fontSize');
+        const bgColorSelect = document.getElementById('bgColor');
+        const malaCountDisplay = document.getElementById('malaCount');
+        const countDisplay = document.getElementById('countDisplay');
+        const dateDisplay = document.getElementById('dateDisplay');
+        const historyContent = document.getElementById('historyContent');
+        const totalMalaDisplay = document.getElementById('totalMala');
+        const totalCountDisplay = document.getElementById('totalCount');
+        const userInfo = document.getElementById('userInfo');
+        const googleSignInButton = document.getElementById('googleSignInButton');
+
+        // Set default settings
+        const defaultSettings = {
+            blinkSpeed: '400', // 0.4s
+            fontSize: '400',   // 400px
+            bgColor: '#ffffe0' // Light Yellow
+        };
+
+        // Load settings from local storage as a fallback
+        const loadLocalSettings = () => {
+            const settings = {
+                blinkSpeed: localStorage.getItem('blinkSpeed') || defaultSettings.blinkSpeed,
+                fontSize: localStorage.getItem('fontSize') || defaultSettings.fontSize,
+                bgColor: localStorage.getItem('bgColor') || defaultSettings.bgColor
+            };
+            blinkSpeedSelect.value = settings.blinkSpeed;
+            fontSizeSelect.value = settings.fontSize;
+            bgColorSelect.value = settings.bgColor;
+            text.style.fontSize = settings.fontSize + 'px';
+            document.body.style.backgroundColor = settings.bgColor;
+        };
+
+        // Load mala and count from local storage as a fallback
+        const loadLocalCounts = () => {
+            mala = parseInt(localStorage.getItem(`mala_${currentDate}_${user?.uid}`)) || 0;
+            count = parseInt(localStorage.getItem(`count_${currentDate}_${user?.uid}`)) || 0;
+            malaCountDisplay.textContent = mala;
+            countDisplay.textContent = count;
+        };
+
+        // Save settings to local storage
+        const saveLocalSettings = () => {
+            localStorage.setItem('blinkSpeed', blinkSpeedSelect.value);
+            localStorage.setItem('fontSize', fontSizeSelect.value);
+            localStorage.setItem('bgColor', bgColorSelect.value);
+        };
+
+        // Save mala and count to local storage
+        const saveLocalCounts = () => {
+            if (user) {
+                localStorage.setItem(`mala_${currentDate}_${user.uid}`, mala);
+                localStorage.setItem(`count_${currentDate}_${user.uid}`, count);
+            }
+        };
+
+        // Apply default settings on initial load
+        loadLocalSettings();
+
+        // Format date as YYYY-MM-DD
+        function getFormattedDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        // Blink function
+        function blink() {
+            text.style.visibility = (text.style.visibility === 'hidden') ? 'visible' : 'hidden';
+            if (text.style.visibility === 'visible') {
+                count++;
+                if (count === 108) {
+                    mala++;
+                    count = 0;
+                    updateFirestore();
+                    saveLocalCounts();
+                }
+                countDisplay.textContent = count;
+                malaCountDisplay.textContent = mala;
+                saveLocalCounts();
+            }
+        }
+
+        // Update Firestore with current day's data
+        function updateFirestore() {
+            if (!user) return;
+            const userRef = db.collection('users').doc(user.uid);
+            userRef.set({
+                settings: {
+                    blinkSpeed: blinkSpeedSelect.value,
+                    fontSize: fontSizeSelect.value,
+                    bgColor: bgColorSelect.value
+                }
+            }, { merge: true }).catch(error => {
+                console.error('Error saving settings:', error);
+                if (!error.message.includes('offline')) {
+                    alert('Failed to save settings: ' + error.message);
+                }
+            });
+
+            userRef.collection('dailyCounts').doc(currentDate).set({
+                date: currentDate,
+                mala: mala,
+                count: count,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(error => {
+                console.error('Error saving daily counts:', error);
+                if (!error.message.includes('offline')) {
+                    alert('Failed to save daily counts: ' + error.message);
+                }
+            });
+        }
+
+        // Load user data from Firestore
+        function loadUserData() {
+            if (!user) return;
+            const userRef = db.collection('users').doc(user.uid);
+
+            // Load settings
+            userRef.get().then(doc => {
+                if (doc.exists && doc.data().settings) {
+                    const settings = doc.data().settings;
+                    blinkSpeedSelect.value = settings.blinkSpeed || defaultSettings.blinkSpeed;
+                    fontSizeSelect.value = settings.fontSize || defaultSettings.fontSize;
+                    bgColorSelect.value = settings.bgColor || defaultSettings.bgColor;
+                    text.style.fontSize = fontSizeSelect.value + 'px';
+                    document.body.style.backgroundColor = bgColorSelect.value;
+                    saveLocalSettings();
+                    if (isBlinking) {
+                        clearInterval(blinkInterval);
+                        blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
+                    }
+                } else {
+                    // If no settings exist, apply defaults and save them
+                    blinkSpeedSelect.value = defaultSettings.blinkSpeed;
+                    fontSizeSelect.value = defaultSettings.fontSize;
+                    bgColorSelect.value = defaultSettings.bgColor;
+                    text.style.fontSize = defaultSettings.fontSize + 'px';
+                    document.body.style.backgroundColor = defaultSettings.bgColor;
+                    saveLocalSettings();
+                    updateFirestore();
+                }
+            }).catch(error => {
+                console.error('Error loading settings:', error);
+                loadLocalSettings();
+                if (!error.message.includes('offline')) {
+                    alert('Failed to load settings: ' + error.message);
+                }
+            });
+
+            // Load daily counts and history
+            userRef.collection('dailyCounts').orderBy('timestamp', 'desc').get().then(snapshot => {
+                totalMala = 0;
+                totalCount = 0;
+                historyContent.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (doc.id === currentDate) {
+                        mala = data.mala || 0;
+                        count = data.count || 0;
+                        malaCountDisplay.textContent = mala;
+                        countDisplay.textContent = count;
+                        saveLocalCounts();
+                    }
+                    totalMala += data.mala || 0;
+                    totalCount += (data.count || 0) + (data.mala || 0) * 108;
+                    historyContent.innerHTML += `<p>${data.date}: Mala: ${data.mala || 0}, Count: ${data.count || 0}</p>`;
+                });
+                totalMalaDisplay.textContent = totalMala;
+                totalCountDisplay.textContent = totalCount;
+            }).catch(error => {
+                console.error('Error loading history:', error);
+                loadLocalCounts();
+                if (!error.message.includes('offline')) {
+                    alert('Failed to load history: ' + error.message);
+                }
+            });
+
+            dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        // Reset mala and count if date has changed
+        function checkDateChange() {
+            const today = getFormattedDate(new Date());
+            if (today !== currentDate) {
+                current...
+
+Something went wrong, please refresh to reconnect or try again.
