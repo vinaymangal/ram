@@ -34,4 +34,172 @@
         }
 
         .blink {
-            font-size: clamp(100px, 20
+            font-size: clamp(100px, 20vw, 450px); /* Responsive font size */
+            font-weight: bold;
+            color: #ff0000; /* Bright red for emphasis */
+        }
+
+        /* Controls container styling */
+        #controls {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column; /* Stack vertically */
+            gap: 10px; /* Space between elements */
+            max-width: 150px; /* Reasonable width for desktop */
+        }
+
+        /* Button and select styling */
+        button, select {
+            background: none; /* No background color */
+            border: 1px solid #ccc; /* Light border for definition */
+            color: #666; /* Light gray text */
+            padding: 5px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Counter styling */
+        #counter {
+            color: #666; /* Light gray text */
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* Header and paragraph styling */
+        h1 {
+            font-size: 28px;
+            color: #999999; /* Light gray for subtlety */
+        }
+
+        p {
+            font-size: 16px;
+            color: #999999;
+        }
+
+        /* Google Sign-In Button */
+        #googleSignInButton {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        #googleSignInButton:hover {
+            background-color: #3267D6;
+        }
+
+        /* User Info Display */
+        #userInfo {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        #userInfo span {
+            color: #4285F4; /* Blue color for the Sign Out link */
+            text-decoration: underline;
+        }
+
+        #userInfo span:hover {
+            color: #3267D6;
+        }
+
+        /* History Display */
+        #history {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+            max-height: 150px;
+            overflow-y: auto;
+            width: 100%;
+            max-width: 300px;
+            text-align: left;
+        }
+
+        /* Mobile optimization */
+        @media (max-width: 600px) {
+            #mainContent {
+                padding-right: 110px; /* Adjusted space for controls on mobile */
+            }
+
+            #controls {
+                max-width: 100px; /* Narrower for mobile */
+            }
+
+            button, select {
+                font-size: 12px; /* Smaller text */
+                padding: 3px; /* Reduced padding */
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            p {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="mainContent">
+        <h1>राम नाम खाता</h1>
+        <p>राम नाम बैंक में राम नाम जप का खाता खोलो और नाम संख्य जमा करो</p>
+        <div class="blink">राम</div>
+    </div>
+    <div id="controls">
+        <button id="googleSignInButton">Sign in with Google</button>
+        <div id="userInfo"></div>
+        <button id="fullscreenButton">Full Screen</button>
+        <button id="toggleBlink">Stop Blinking</button>
+        <select id="blinkSpeed">
+            <option value="100">0.1s</option>
+            <option value="200">0.2s</option>
+            <option value="300">0.3s</option>
+            <option value="400">0.4s</option>
+            <option value="500">0.5s</option>
+            <option value="600">0.6s</option>
+            <option value="700">0.7s</option>
+            <option value="800">0.8s</option>
+            <option value="900">0.9s</option>
+            <option value="1000">1.0s</option>
+        </select>
+        <select id="fontSize">
+            <option value="350">350px</option>
+            <option value="400">400px</option>
+            <option value="450">450px</option>
+            <option value="500">500px</option>
+            <option value="550">550px</option>
+        </select>
+        <select id="bgColor">
+            <option value="#ffffff">White</option>
+            <option value="#f0f0f0">Light Gray</option>
+            <option value="#d3d3d3">Gray</option>
+            <option value="#000000">Black</option>
+            <option value="#1a1a1a">Dark Gray</option>
+            <option value="#ffffe0">Light Yellow</option>
+        </select>
+        <div id="counter">
+            <p id="dateDisplay"></p>
+            <p>Mala: <span id="malaCount">0</span></p>
+            <p>Count: <span id="countDisplay">0</span></p>
+        </div>
+        <div id="history">
+            <p><strong>History</strong></p>
+            <div id="historyContent"></div>
+            <p>Total Mala: <span id="totalMala">0</span></p>
+            <p>Total Count: <span id="totalCount">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDX
