@@ -99,16 +99,6 @@
             margin-top: 10px;
             font-size: 14px;
             color: #666;
-            cursor: pointer;
-        }
-
-        #userInfo span {
-            color: #4285F4; /* Blue color for the Sign Out link */
-            text-decoration: underline;
-        }
-
-        #userInfo span:hover {
-            color: #3267D6;
         }
 
         /* History Display */
@@ -333,6 +323,7 @@
                 }
             }, { merge: true }).catch(error => {
                 console.error('Error saving settings:', error);
+                // Do not alert for offline errors
                 if (!error.message.includes('offline')) {
                     alert('Failed to save settings: ' + error.message);
                 }
@@ -382,6 +373,7 @@
                 }
             }).catch(error => {
                 console.error('Error loading settings:', error);
+                // Use local settings if Firestore fails
                 loadLocalSettings();
                 if (!error.message.includes('offline')) {
                     alert('Failed to load settings: ' + error.message);
@@ -410,6 +402,7 @@
                 totalCountDisplay.textContent = totalCount;
             }).catch(error => {
                 console.error('Error loading history:', error);
+                // Use local counts if Firestore fails
                 loadLocalCounts();
                 if (!error.message.includes('offline')) {
                     alert('Failed to load history: ' + error.message);
@@ -423,6 +416,181 @@
         function checkDateChange() {
             const today = getFormattedDate(new Date());
             if (today !== currentDate) {
-                current...
+                currentDate = today;
+                mala = 0;
+                count = 0;
+                malaCountDisplay.textContent = mala;
+                countDisplay.textContent = count;
+                saveLocalCounts();
+                updateFirestore();
+                loadUserData();
+            }
+        }
 
-Something went wrong, please refresh to reconnect or try again.
+        // Google Sign-In
+        googleSignInButton.addEventListener('click', () => {
+            auth.signInWithPopup(provider).then(result => {
+                user = result.user;
+                userInfo.textContent = `Welcome, ${user.displayName} | Sign Out`;
+                userInfo.style.cursor = 'pointer';
+                googleSignInButton.style.display = 'none'; // Hide the Sign-In button after login
+                userInfo.addEventListener('click', () => {
+                    auth.signOut().then(() => {
+                        user = null;
+                        userInfo.textContent = '';
+                        googleSignInButton.style.display = 'block'; // Show the Sign-In button after sign-out
+                        mala = 0;
+                        count = 0;
+                        totalMala = 0;
+                        totalCount = 0;
+                        malaCountDisplay.textContent = '0';
+                        countDisplay.textContent = '0';
+                        historyContent.innerHTML = '';
+                        totalMalaDisplay.textContent = '0';
+                        totalCountDisplay.textContent = '0';
+                        dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        // Reset to default settings on sign-out
+                        blinkSpeedSelect.value = defaultSettings.blinkSpeed;
+                        fontSizeSelect.value = defaultSettings.fontSize;
+                        bgColorSelect.value = defaultSettings.bgColor;
+                        text.style.fontSize = defaultSettings.fontSize + 'px';
+                        document.body.style.backgroundColor = defaultSettings.bgColor;
+                        saveLocalSettings();
+                    }).catch(error => {
+                        console.error('Sign-Out Error:', error);
+                        alert('Failed to sign out: ' + error.message);
+                    });
+                });
+                loadUserData();
+            }).catch(error => {
+                console.error('Sign-In Error:', error);
+                alert('Failed to sign in: ' + error.message);
+            });
+        });
+
+        // Check authentication state
+        auth.onAuthStateChanged(userAuth => {
+            user = userAuth;
+            if (user) {
+                userInfo.textContent = `Welcome, ${user.displayName} | Sign Out`;
+                userInfo.style.cursor = 'pointer';
+                googleSignInButton.style.display = 'none'; // Hide the Sign-In button if user is already logged in
+                loadUserData();
+                loadLocalCounts(); // Load local counts immediately
+            } else {
+                userInfo.textContent = '';
+                googleSignInButton.style.display = 'block'; // Show the Sign-In button if user is not logged in
+            }
+        });
+
+        // Initialize blinking
+        blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
+        dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        // Toggle blinking
+        document.getElementById('toggleBlink').addEventListener('click', function() {
+            if (isBlinking) {
+                clearInterval(blinkInterval);
+                text.style.visibility = 'visible';
+                isBlinking = false;
+                this.textContent = 'Start Blinking';
+            } else {
+                blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
+                isBlinking = true;
+                this.textContent = 'Stop Blinking';
+            }
+        });
+
+        // Full-screen logic
+        document.getElementById('fullscreenButton').addEventListener('click', function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Error enabling full-screen mode: ${err.message}`);
+                });
+                this.textContent = 'Exit Full Screen';
+            } else {
+                document.exitFullscreen();
+                this.textContent = 'Full Screen';
+            }
+        });
+
+        // Blink speed control
+        blinkSpeedSelect.addEventListener('change', function() {
+            if (user) {
+                updateFirestore();
+            }
+            saveLocalSettings();
+            if (isBlinking) {
+                clearInterval(blinkInterval);
+                blinkInterval = setInterval(blink, parseInt(this.value));
+            }
+        });
+
+        // Font size control
+        fontSizeSelect.addEventListener('change', function() {
+            text.style.fontSize = this.value + 'px';
+            if (user) {
+                updateFirestore();
+            }
+            saveLocalSettings();
+        });
+
+        // Background color control
+        bgColorSelect.addEventListener('change', function() {
+            document.body.style.backgroundColor = this.value;
+            if (user) {
+                updateFirestore();
+            }
+            saveLocalSettings();
+        });
+
+        // Stop blinking when window loses focus
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                if (isBlinking) {
+                    clearInterval(blinkInterval);
+                }
+            } else {
+                if (isBlinking) {
+                    blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
+                }
+            }
+        });
+
+        // Prevent screen sleep/rest mode while blinking
+        let wakeLock = null;
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Wake Lock is active');
+                }
+            } catch (err) {
+                console.error(`Wake Lock failed: ${err.message}`);
+            }
+        }
+
+        async function releaseWakeLock() {
+            if (wakeLock !== null) {
+                await wakeLock.release();
+                wakeLock = null;
+                console.log('Wake Lock released');
+            }
+        }
+
+        document.getElementById('toggleBlink').addEventListener('click', async function() {
+            if (isBlinking) {
+                await requestWakeLock();
+            } else {
+                await releaseWakeLock();
+            }
+        });
+
+        requestWakeLock();
+        window.addEventListener('unload', releaseWakeLock);
+
+        // Check for date change every minute
+        setInterval(checkDateChange, 60000);
+    </script>
+</body>
+</html>
