@@ -9,141 +9,182 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
-        /* General body styling */
         body {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
             margin: 0;
-            padding: 20px;
-            background-color: #ffffff;
             font-family: Arial, sans-serif;
-            box-sizing: border-box;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #ffffe0;
+            transition: background-color 0.3s ease;
         }
 
-        /* Main content styling */
-        #mainContent {
-            text-align: center;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding-right: 160px; /* Space for controls on desktop */
-        }
-
-        .blink {
-            font-size: clamp(100px, 20vw, 450px); /* Responsive font size */
-            font-weight: bold;
-            color: #ff0000; /* Bright red for emphasis */
-        }
-
-        /* Controls container styling */
-        #controls {
+        /* Sidebar toggle button */
+        #sidebarToggle {
             position: fixed;
             top: 10px;
-            right: 10px;
-            display: flex;
-            flex-direction: column; /* Stack vertically */
-            gap: 10px; /* Space between elements */
-            max-width: 150px; /* Reasonable width for desktop */
-        }
-
-        /* Button and select styling */
-        button, select {
-            background: none; /* No background color */
-            border: 1px solid #ccc; /* Light border for definition */
-            color: #666; /* Light gray text */
-            padding: 5px;
-            text-align: center;
+            left: 10px;
+            z-index: 1000;
+            background-color: #e0e0e0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px 12px;
             cursor: pointer;
-            font-size: 14px;
-        }
-
-        /* Counter styling */
-        #counter {
-            color: #666; /* Light gray text */
-            font-size: 12px;
-            text-align: center;
-        }
-
-        /* Header and paragraph styling */
-        h1 {
-            font-size: 28px;
-            color: #999999; /* Light gray for subtlety */
-        }
-
-        p {
             font-size: 16px;
-            color: #999999;
+            transition: all 0.3s ease;
         }
 
-        /* Google Sign-In Button */
+        #sidebarToggle:hover {
+            background-color: #d0d0d0;
+        }
+
+        /* Side controls */
+        #controls {
+            position: fixed;
+            top: 0;
+            left: -200px;
+            width: 200px;
+            height: 100%;
+            background-color: #f5f5f5;
+            border-right: 1px solid #ccc;
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            transition: left 0.3s ease;
+            z-index: 900;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        #controls.visible {
+            left: 0;
+        }
+
+        button, select {
+            padding: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            background: #e9e9e9;
+            color: #555;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        button:hover, select:hover {
+            background: #d9d9d9;
+        }
+
         #googleSignInButton {
             background-color: #4285F4;
             color: white;
             border: none;
-            padding: 10px;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 3px;
         }
 
         #googleSignInButton:hover {
             background-color: #3267D6;
         }
 
-        /* User Info Display */
         #userInfo {
-            margin-top: 10px;
             font-size: 14px;
             color: #666;
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
-        /* History Display */
+        #mainContent {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: margin-left 0.3s ease;
+        }
+
+        .ram-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+            color: #777;
+            font-size: 4vmin;
+        }
+
+        .ram-description {
+            font-size: 2.5vmin;
+            margin-bottom: 20px;
+            color: #777;
+        }
+
+        .blink {
+            font-size: 35vmin;
+            font-weight: bold;
+            color: #ff0000;
+            transition: font-size 0.3s ease;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+
+        footer {
+            background-color: rgba(250, 250, 250, 0.8);
+            border-top: 1px solid #ddd;
+            padding: 10px;
+            font-size: 2vmin;
+            color: #444;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        #counter p, #history p {
+            margin: 4px 0;
+        }
+
         #history {
-            margin-top: 20px;
-            font-size: 12px;
-            color: #666;
             max-height: 150px;
             overflow-y: auto;
             width: 100%;
             max-width: 300px;
-            text-align: left;
         }
 
-        /* Mobile optimization */
         @media (max-width: 600px) {
-            #mainContent {
-                padding-right: 110px; /* Adjusted space for controls on mobile */
-            }
-
             #controls {
-                max-width: 100px; /* Narrower for mobile */
+                width: 180px;
+                left: -180px;
             }
-
-            button, select {
-                font-size: 12px; /* Smaller text */
-                padding: 3px; /* Reduced padding */
+            
+            footer {
+                flex-direction: column;
+                align-items: center;
+                font-size: 3vmin;
             }
-
+            
             h1 {
-                font-size: 24px;
+                font-size: 5vmin;
             }
-
-            p {
-                font-size: 14px;
+            
+            .ram-description {
+                font-size: 3.5vmin;
             }
         }
     </style>
 </head>
 <body>
-    <div id="mainContent">
-        <h1>राम नाम खाता</h1>
-        <p>राम नाम बैंक में राम नाम जप का खाता खोलो और नाम संख्य जमा करो</p>
-        <div class="blink">राम</div>
-    </div>
+    <button id="sidebarToggle">☰</button>
+    
     <div id="controls">
         <button id="googleSignInButton">Sign in with Google</button>
         <div id="userInfo"></div>
@@ -153,7 +194,7 @@
             <option value="100">0.1s</option>
             <option value="200">0.2s</option>
             <option value="300">0.3s</option>
-            <option value="400">0.4s</option>
+            <option value="400" selected>0.4s</option>
             <option value="500">0.5s</option>
             <option value="600">0.6s</option>
             <option value="700">0.7s</option>
@@ -162,22 +203,19 @@
             <option value="1000">1.0s</option>
         </select>
         <select id="fontSize">
-            <option value="350">350px</option>
-            <option value="400">400px</option>
-            <option value="450">450px</option>
-            <option value="500">500px</option>
-            <option value="550">550px</option>
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large" selected>Large</option>
+            <option value="xlarge">Extra Large</option>
         </select>
         <select id="bgColor">
             <option value="#ffffff">White</option>
             <option value="#f0f0f0">Light Gray</option>
-            <option value="#d3d3d3">Gray</option>
             <option value="#000000">Black</option>
-            <option value="#1a1a1a">Dark Gray</option>
-            <option value="#ffffe0">Light Yellow</option>
+            <option value="#ffffe0" selected>Light Yellow</option>
         </select>
         <div id="counter">
-            <p id="dateDisplay"></p>
+            <p id="dateDisplay">Date: --</p>
             <p>Mala: <span id="malaCount">0</span></p>
             <p>Count: <span id="countDisplay">0</span></p>
         </div>
@@ -186,6 +224,14 @@
             <div id="historyContent"></div>
             <p>Total Mala: <span id="totalMala">0</span></p>
             <p>Total Count: <span id="totalCount">0</span></p>
+        </div>
+    </div>
+
+    <div id="mainContent">
+        <div class="ram-container">
+            <h1>राम नाम खाता</h1>
+            <p class="ram-description">राम नाम बैंक में खाता खोलो, जप का खाता चालु</p>
+            <div class="blink">राम</div>
         </div>
     </div>
 
@@ -218,18 +264,10 @@
         // Google Sign-In Provider
         const provider = new firebase.auth.GoogleAuthProvider();
 
-        // Blinking logic
-        let text = document.querySelector('.blink');
-        let mala = 0;
-        let count = 0;
-        let totalMala = 0;
-        let totalCount = 0;
-        let blinkInterval;
-        let isBlinking = true;
-        let user = null;
-        let currentDate = getFormattedDate(new Date());
-
         // Elements
+        const text = document.querySelector('.blink');
+        const controls = document.getElementById('controls');
+        const sidebarToggle = document.getElementById('sidebarToggle');
         const blinkSpeedSelect = document.getElementById('blinkSpeed');
         const fontSizeSelect = document.getElementById('fontSize');
         const bgColorSelect = document.getElementById('bgColor');
@@ -241,13 +279,42 @@
         const totalCountDisplay = document.getElementById('totalCount');
         const userInfo = document.getElementById('userInfo');
         const googleSignInButton = document.getElementById('googleSignInButton');
+        const toggleBlinkButton = document.getElementById('toggleBlink');
+        const fullscreenButton = document.getElementById('fullscreenButton');
 
-        // Set default settings
+        // Variables
+        let mala = 0;
+        let count = 0;
+        let totalMala = 0;
+        let totalCount = 0;
+        let blinkInterval;
+        let isBlinking = true;
+        let user = null;
+        let currentDate = getFormattedDate(new Date());
+
+        // Default settings
         const defaultSettings = {
             blinkSpeed: '400', // 0.4s
-            fontSize: '400',   // 400px
+            fontSize: 'large',
             bgColor: '#ffffe0' // Light Yellow
         };
+
+        // Toggle sidebar
+        sidebarToggle.addEventListener('click', function() {
+            controls.classList.toggle('visible');
+        });
+
+        // Close sidebar when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!controls.contains(event.target) && event.target !== sidebarToggle) {
+                controls.classList.remove('visible');
+            }
+        });
+
+        // Format date as YYYY-MM-DD
+        function getFormattedDate(date) {
+            return date.toISOString().split('T')[0];
+        }
 
         // Load settings from local storage as a fallback
         const loadLocalSettings = () => {
@@ -259,14 +326,14 @@
             blinkSpeedSelect.value = settings.blinkSpeed;
             fontSizeSelect.value = settings.fontSize;
             bgColorSelect.value = settings.bgColor;
-            text.style.fontSize = settings.fontSize + 'px';
+            updateFontSize(settings.fontSize);
             document.body.style.backgroundColor = settings.bgColor;
         };
 
         // Load mala and count from local storage as a fallback
         const loadLocalCounts = () => {
-            mala = parseInt(localStorage.getItem(`mala_${currentDate}_${user?.uid}`)) || 0;
-            count = parseInt(localStorage.getItem(`count_${currentDate}_${user?.uid}`)) || 0;
+            mala = parseInt(localStorage.getItem(`mala_${currentDate}_${user?.uid || 'guest'}`)) || 0;
+            count = parseInt(localStorage.getItem(`count_${currentDate}_${user?.uid || 'guest'}`)) || 0;
             malaCountDisplay.textContent = mala;
             countDisplay.textContent = count;
         };
@@ -280,19 +347,30 @@
 
         // Save mala and count to local storage
         const saveLocalCounts = () => {
-            if (user) {
-                localStorage.setItem(`mala_${currentDate}_${user.uid}`, mala);
-                localStorage.setItem(`count_${currentDate}_${user.uid}`, count);
-            }
+            localStorage.setItem(`mala_${currentDate}_${user?.uid || 'guest'}`, mala);
+            localStorage.setItem(`count_${currentDate}_${user?.uid || 'guest'}`, count);
         };
+
+        // Update font size based on selection
+        function updateFontSize(size) {
+            switch(size) {
+                case 'small':
+                    text.style.fontSize = '25vmin';
+                    break;
+                case 'medium':
+                    text.style.fontSize = '30vmin';
+                    break;
+                case 'large':
+                    text.style.fontSize = '35vmin';
+                    break;
+                case 'xlarge':
+                    text.style.fontSize = '40vmin';
+                    break;
+            }
+        }
 
         // Apply default settings on initial load
         loadLocalSettings();
-
-        // Format date as YYYY-MM-DD
-        function getFormattedDate(date) {
-            return date.toISOString().split('T')[0];
-        }
 
         // Blink function
         function blink() {
@@ -303,7 +381,6 @@
                     mala++;
                     count = 0;
                     updateFirestore();
-                    saveLocalCounts();
                 }
                 countDisplay.textContent = count;
                 malaCountDisplay.textContent = mala;
@@ -325,7 +402,7 @@
                 console.error('Error saving settings:', error);
                 // Do not alert for offline errors
                 if (!error.message.includes('offline')) {
-                    alert('Failed to save settings: ' + error.message);
+                    console.warn('Failed to save settings: ' + error.message);
                 }
             });
 
@@ -337,7 +414,7 @@
             }).catch(error => {
                 console.error('Error saving daily counts:', error);
                 if (!error.message.includes('offline')) {
-                    alert('Failed to save daily counts: ' + error.message);
+                    console.warn('Failed to save daily counts: ' + error.message);
                 }
             });
         }
@@ -354,8 +431,8 @@
                     blinkSpeedSelect.value = settings.blinkSpeed || defaultSettings.blinkSpeed;
                     fontSizeSelect.value = settings.fontSize || defaultSettings.fontSize;
                     bgColorSelect.value = settings.bgColor || defaultSettings.bgColor;
-                    text.style.fontSize = fontSizeSelect.value + 'px';
-                    document.body.style.backgroundColor = bgColorSelect.value;
+                    updateFontSize(settings.fontSize);
+                    document.body.style.backgroundColor = settings.bgColor;
                     saveLocalSettings();
                     if (isBlinking) {
                         clearInterval(blinkInterval);
@@ -366,7 +443,7 @@
                     blinkSpeedSelect.value = defaultSettings.blinkSpeed;
                     fontSizeSelect.value = defaultSettings.fontSize;
                     bgColorSelect.value = defaultSettings.bgColor;
-                    text.style.fontSize = defaultSettings.fontSize + 'px';
+                    updateFontSize(defaultSettings.fontSize);
                     document.body.style.backgroundColor = defaultSettings.bgColor;
                     saveLocalSettings();
                     updateFirestore();
@@ -376,7 +453,7 @@
                 // Use local settings if Firestore fails
                 loadLocalSettings();
                 if (!error.message.includes('offline')) {
-                    alert('Failed to load settings: ' + error.message);
+                    console.warn('Failed to load settings: ' + error.message);
                 }
             });
 
@@ -405,7 +482,7 @@
                 // Use local counts if Firestore fails
                 loadLocalCounts();
                 if (!error.message.includes('offline')) {
-                    alert('Failed to load history: ' + error.message);
+                    console.warn('Failed to load history: ' + error.message);
                 }
             });
 
@@ -431,36 +508,8 @@
         googleSignInButton.addEventListener('click', () => {
             auth.signInWithPopup(provider).then(result => {
                 user = result.user;
-                userInfo.textContent = `Welcome, ${user.displayName} | Sign Out`;
-                userInfo.style.cursor = 'pointer';
+                userInfo.textContent = `${user.displayName} | Sign Out`;
                 googleSignInButton.style.display = 'none'; // Hide the Sign-In button after login
-                userInfo.addEventListener('click', () => {
-                    auth.signOut().then(() => {
-                        user = null;
-                        userInfo.textContent = '';
-                        googleSignInButton.style.display = 'block'; // Show the Sign-In button after sign-out
-                        mala = 0;
-                        count = 0;
-                        totalMala = 0;
-                        totalCount = 0;
-                        malaCountDisplay.textContent = '0';
-                        countDisplay.textContent = '0';
-                        historyContent.innerHTML = '';
-                        totalMalaDisplay.textContent = '0';
-                        totalCountDisplay.textContent = '0';
-                        dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                        // Reset to default settings on sign-out
-                        blinkSpeedSelect.value = defaultSettings.blinkSpeed;
-                        fontSizeSelect.value = defaultSettings.fontSize;
-                        bgColorSelect.value = defaultSettings.bgColor;
-                        text.style.fontSize = defaultSettings.fontSize + 'px';
-                        document.body.style.backgroundColor = defaultSettings.bgColor;
-                        saveLocalSettings();
-                    }).catch(error => {
-                        console.error('Sign-Out Error:', error);
-                        alert('Failed to sign out: ' + error.message);
-                    });
-                });
                 loadUserData();
             }).catch(error => {
                 console.error('Sign-In Error:', error);
@@ -468,12 +517,42 @@
             });
         });
 
+        // Sign Out handler
+        userInfo.addEventListener('click', () => {
+            if (user) {
+                auth.signOut().then(() => {
+                    user = null;
+                    userInfo.textContent = '';
+                    googleSignInButton.style.display = 'block'; // Show the Sign-In button after sign-out
+                    mala = 0;
+                    count = 0;
+                    totalMala = 0;
+                    totalCount = 0;
+                    malaCountDisplay.textContent = '0';
+                    countDisplay.textContent = '0';
+                    historyContent.innerHTML = '';
+                    totalMalaDisplay.textContent = '0';
+                    totalCountDisplay.textContent = '0';
+                    dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                    // Reset to default settings on sign-out
+                    blinkSpeedSelect.value = defaultSettings.blinkSpeed;
+                    fontSizeSelect.value = defaultSettings.fontSize;
+                    bgColorSelect.value = defaultSettings.bgColor;
+                    updateFontSize(defaultSettings.fontSize);
+                    document.body.style.backgroundColor = defaultSettings.bgColor;
+                    saveLocalSettings();
+                }).catch(error => {
+                    console.error('Sign-Out Error:', error);
+                    alert('Failed to sign out: ' + error.message);
+                });
+            }
+        });
+
         // Check authentication state
         auth.onAuthStateChanged(userAuth => {
             user = userAuth;
             if (user) {
-                userInfo.textContent = `Welcome, ${user.displayName} | Sign Out`;
-                userInfo.style.cursor = 'pointer';
+                userInfo.textContent = `${user.displayName} | Sign Out`;
                 googleSignInButton.style.display = 'none'; // Hide the Sign-In button if user is already logged in
                 loadUserData();
                 loadLocalCounts(); // Load local counts immediately
@@ -483,26 +562,28 @@
             }
         });
 
-        // Initialize blinking
-        blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
-        dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
         // Toggle blinking
-        document.getElementById('toggleBlink').addEventListener('click', function() {
+        toggleBlinkButton.addEventListener('click', function() {
             if (isBlinking) {
                 clearInterval(blinkInterval);
                 text.style.visibility = 'visible';
-                isBlinking = false;
                 this.textContent = 'Start Blinking';
             } else {
                 blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
-                isBlinking = true;
                 this.textContent = 'Stop Blinking';
+            }
+            isBlinking = !isBlinking;
+            
+            // Wake lock for keeping screen on
+            if (isBlinking) {
+                requestWakeLock();
+            } else {
+                releaseWakeLock();
             }
         });
 
         // Full-screen logic
-        document.getElementById('fullscreenButton').addEventListener('click', function() {
+        fullscreenButton.addEventListener('click', function() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
                     console.error(`Error enabling full-screen mode: ${err.message}`);
@@ -528,7 +609,7 @@
 
         // Font size control
         fontSizeSelect.addEventListener('change', function() {
-            text.style.fontSize = this.value + 'px';
+            updateFontSize(this.value);
             if (user) {
                 updateFirestore();
             }
@@ -578,19 +659,19 @@
             }
         }
 
-        document.getElementById('toggleBlink').addEventListener('click', async function() {
-            if (isBlinking) {
-                await requestWakeLock();
-            } else {
-                await releaseWakeLock();
-            }
-        });
+        // Initialize blinking
+        blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
+        dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
+        // Request wake lock initially
         requestWakeLock();
         window.addEventListener('unload', releaseWakeLock);
 
         // Check for date change every minute
         setInterval(checkDateChange, 60000);
+        
+        // Initialize local data
+        loadLocalCounts();
     </script>
 </body>
 </html>
