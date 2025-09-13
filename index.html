@@ -70,12 +70,7 @@
 </head>
 <body class="bg-orange-50 text-gray-800 antialiased overflow-hidden">
 
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="loader"></div>
-    </div>
-
-    <div id="app-container" class="w-full h-[100dvh] flex opacity-0">
+    <div id="app-container" class="w-full h-[100dvh] flex">
 
         <!-- Sidebar / Controls (Only visible in Chanting View) -->
         <aside id="sidebar" class="absolute top-0 left-0 h-full w-72 bg-white shadow-lg p-4 flex flex-col z-20 transform -translate-x-full md:relative md:transform-none md:w-80">
@@ -171,10 +166,7 @@
 
             <!-- Dashboard View -->
             <div id="dashboard-view" class="hidden w-full h-full p-4 md:p-8 overflow-y-auto">
-                <div id="dashboard-loader" class="w-full h-full flex items-center justify-center">
-                    <div class="om-loader">ॐ</div>
-                </div>
-                <div id="dashboard-content" class="hidden">
+                <div>
                     <button id="back-to-chanting-btn" class="absolute top-4 left-4 z-10 p-2 rounded-full bg-white/70 backdrop-blur-sm"><i class="ph-bold ph-arrow-left text-2xl"></i></button>
                     <h2 class="text-3xl font-bold text-center text-orange-800 mb-6" data-i18n="dashboardTitle">My Progress</h2>
                     
@@ -233,8 +225,8 @@
         ];
         
         const TRANSLATIONS = {
-            'hi': {'controlsTitle':'नियंत्रण','account':'अकाउंट','chantingControls':'जाप नियंत्रण','toggleBlinkStart':'जाप शुरू करें','toggleBlinkStop':'जाप रोकें','selectDeity':'देवता','blinkSpeed':'जाप गति','appearance':'दिखावट','fontSize':'अक्षर का आकार','optSmall':'छोटा','optMedium':'मध्यम','optLarge':'बड़ा','optXLarge':'अतिरिक्त बड़ा','backgroundColor':'बैकग्राउंड का रंग','optLightOrange':'हल्का नारंगी','optWhite':'सफ़ेद','optLightGray':'हल्का ग्रे','optLightBlue':'हल्का नीला','language':'भाषा','chantLabel':'जाप','malaLabel':'माला','totalChants':'कुल जाप','signInPrompt':'अपनी प्रगति सिंक करने के लिए साइन इन करें।','signInBtn':'Google से साइन इन करें','signOutBtn':'साइन आउट','mainTitle':'राम नाम खाता','mainSubtitle':'राम नाम बैंक में खाता खोलो, जप का खाता चालु','allTimeStats':'कुल आँकड़े','todaysStats':'आज के आँकड़े','dashboardTitle':'मेरी प्रगति','grandTotal':'कुल योग','chantingStreak':'जाप की लड़ी','today':'आज','weeklyProgress':'अंतिम 7 दिन की प्रगति','detailedHistory':'विस्तृत इतिहास','dangerZone':'खतरनाक क्षेत्र','deleteWarning':'यह क्रिया पूर्ववत नहीं की जा सकती।','deleteAllHistory':'सारा इतिहास मिटाएं','viewProgress':'प्रगति देखें','confirmDeleteAllTitle':'क्या आप निश्चित हैं?','confirmDeleteAllText':'आपका सारा जाप इतिहास स्थायी रूप से हटा दिया जाएगा।','confirmDeleteRecordTitle':'रिकॉर्ड हटाएं?','confirmDeleteRecordText':'यह रिकॉर्ड स्थायी रूप से हटा दिया जाएगा।','cancel':'रद्द करें','delete':'मिटाएं', 'noStatsYet': 'अभी तक कोई आँकड़े नहीं हैं।', 'soundMode':'ध्वनि मोड', 'optSoundNone':'कोई ध्वनि नहीं', 'optSoundTick':'हर जाप पर', 'optSoundMala':'माला पूरी होने पर', 'malaStat': 'माला', 'chantStat': 'जाप'},
-            'en': {'controlsTitle':'Controls','account':'Account','chantingControls':'Chanting Controls','toggleBlinkStart':'Start Chanting','toggleBlinkStop':'Stop Chanting','selectDeity':'Deity','blinkSpeed':'Blink Speed','appearance':'Appearance','fontSize':'Font Size','optSmall':'Small','optMedium':'Medium','optLarge':'Large','optXLarge':'Extra Large','backgroundColor':'Background Color','optLightOrange':'Light Orange','optWhite':'White','optLightGray':'Light Gray','optLightBlue':'Light Blue','language':'Language','chantLabel':'Chant','malaLabel':'Mala','totalChants':'Grand Total Chants','signInPrompt':'Sign in to sync your progress.','signInBtn':'Sign in with Google','signOutBtn':'Sign Out','mainTitle':'Ram Naam Khata','mainSubtitle':'Open an account in the Ram Naam bank, start your chanting account','allTimeStats':'All-Time Stats','todaysStats':'Today\'s Stats','dashboardTitle':'My Progress','grandTotal':'Grand Total','chantingStreak':'Chanting Streak','today':'Today','weeklyProgress':'Last 7 Days Progress','detailedHistory':'Detailed History','dangerZone':'Danger Zone','deleteWarning':'This action cannot be undone.','deleteAllHistory':'Delete All History','viewProgress':'View Progress','confirmDeleteAllTitle':'Are you sure?','confirmDeleteAllText':'Your entire chanting history will be permanently deleted.','confirmDeleteRecordTitle':'Delete Record?','confirmDeleteRecordText':'This record will be permanently deleted.','cancel':'Cancel','delete':'Delete', 'noStatsYet': 'No stats yet.', 'soundMode':'Sound Mode', 'optSoundNone':'No Sound', 'optSoundTick':'On Every Chant', 'optSoundMala':'On Mala Completion', 'malaStat': 'Mala', 'chantStat': 'Chant'}
+            'hi': {'controlsTitle':'नियंत्रण','account':'अकाउंट','chantingControls':'जाप नियंत्रण','toggleBlinkStart':'जाप शुरू करें','toggleBlinkStop':'जाप रोकें','selectDeity':'देवता','blinkSpeed':'जाप गति','appearance':'दिखावट','fontSize':'अक्षर का आकार','optSmall':'छोटा','optMedium':'मध्यम','optLarge':'बड़ा','optXLarge':'अतिरिक्त बड़ा','backgroundColor':'बैकग्राउंड का रंग','optLightOrange':'हल्का नारंगी','optWhite':'सफ़ेद','optLightGray':'हल्का ग्रे','optLightBlue':'हल्का नीला','language':'भाषा','chantLabel':'जाप','malaLabel':'माला','totalChants':'कुल जाप','signInPrompt':'अपनी प्रगति सिंक करने के लिए साइन इन करें।','signInBtn':'Google से साइन इन करें','signOutBtn':'साइन आउट','mainTitle':'राम नाम खाता','mainSubtitle':'राम नाम बैंक में खाता खोलो, जप का खाता चालु','allTimeStats':'कुल आँकड़े','todaysStats':'आज के आँकड़े','dashboardTitle':'मेरी प्रगति','grandTotal':'कुल योग','chantingStreak':'जाप की लड़ी','today':'आज','weeklyProgress':'अंतिम 7 दिन की प्रगति','detailedHistory':'विस्तृत इतिहास','dangerZone':'खतरनाक क्षेत्र','deleteWarning':'यह क्रिया पूर्ववत नहीं की जा सकती।','deleteAllHistory':'सारा इतिहास मिटाएं','viewProgress':'प्रगति देखें','confirmDeleteAllTitle':'क्या आप निश्चित हैं?','confirmDeleteAllText':'आपका सारा जाप इतिहास स्थायी रूप से हटा दिया जाएगा।','confirmDeleteRecordTitle':'रिकॉर्ड हटाएं?','confirmDeleteRecordText':'यह रिकॉर्ड स्थायी रूप से हटा दिया जाएगा।','cancel':'रद्द करें','delete':'मिटाएं', 'noStatsYet': 'अभी तक कोई आँकड़े नहीं हैं।', 'soundMode':'ध्वनि मोड', 'optSoundNone':'कोई ध्वनि नहीं', 'optSoundTick':'हर जाप पर', 'optSoundMala':'माला पूरी होने पर', 'malaStat': 'माला', 'chantStat': 'जाप', 'loading': 'लोड हो रहा है...'},
+            'en': {'controlsTitle':'Controls','account':'Account','chantingControls':'Chanting Controls','toggleBlinkStart':'Start Chanting','toggleBlinkStop':'Stop Chanting','selectDeity':'Deity','blinkSpeed':'Blink Speed','appearance':'Appearance','fontSize':'Font Size','optSmall':'Small','optMedium':'Medium','optLarge':'Large','optXLarge':'Extra Large','backgroundColor':'Background Color','optLightOrange':'Light Orange','optWhite':'White','optLightGray':'Light Gray','optLightBlue':'Light Blue','language':'Language','chantLabel':'Chant','malaLabel':'Mala','totalChants':'Grand Total Chants','signInPrompt':'Sign in to sync your progress.','signInBtn':'Sign in with Google','signOutBtn':'Sign Out','mainTitle':'Ram Naam Khata','mainSubtitle':'Open an account in the Ram Naam bank, start your chanting account','allTimeStats':'All-Time Stats','todaysStats':'Today\'s Stats','dashboardTitle':'My Progress','grandTotal':'Grand Total','chantingStreak':'Chanting Streak','today':'Today','weeklyProgress':'Last 7 Days Progress','detailedHistory':'Detailed History','dangerZone':'Danger Zone','deleteWarning':'This action cannot be undone.','deleteAllHistory':'Delete All History','viewProgress':'View Progress','confirmDeleteAllTitle':'Are you sure?','confirmDeleteAllText':'Your entire chanting history will be permanently deleted.','confirmDeleteRecordTitle':'Delete Record?','confirmDeleteRecordText':'This record will be permanently deleted.','cancel':'Cancel','delete':'Delete', 'noStatsYet': 'No stats yet.', 'soundMode':'Sound Mode', 'optSoundNone':'No Sound', 'optSoundTick':'On Every Chant', 'optSoundMala':'On Mala Completion', 'malaStat': 'Mala', 'chantStat': 'Chant', 'loading': 'Loading...'}
         };
 
         const firebaseConfig = { apiKey: "AIzaSyDX4Bm3HBOMTZ2E9f_pPUKykzANumG6Bpg", authDomain: "ramnaam1.firebaseapp.com", projectId: "ramnaam1", storageBucket: "ramnaam1.firebasestorage.app", messagingSenderId: "399389434845", appId: "1:399389434845:web:bf67b08826207481054c34" };
@@ -246,7 +238,7 @@
         let confirmationCallback = null;
 
         const DOMElements = {
-            loadingOverlay: document.getElementById('loading-overlay'), appContainer: document.getElementById('app-container'),
+            appContainer: document.getElementById('app-container'),
             sidebar: document.getElementById('sidebar'), openSidebarBtn: document.getElementById('open-sidebar-btn'),
             closeSidebarBtn: document.getElementById('close-sidebar-btn'), 
             deityNameContainer: document.getElementById('deity-name-container'), userInfoContainer: document.getElementById('user-info-container'),
@@ -257,8 +249,7 @@
             malaCount: document.getElementById('mala-count'), totalChants: document.getElementById('total-chants'),
             allTimeStatsContainer: document.getElementById('all-time-stats-container'), errorModal: document.getElementById('error-modal'),
             closeErrorModalBtn: document.getElementById('close-error-modal'), chantingView: document.getElementById('chanting-view'),
-            dashboardView: document.getElementById('dashboard-view'), dashboardLoader: document.getElementById('dashboard-loader'),
-            dashboardContent: document.getElementById('dashboard-content'), backToChantingBtn: document.getElementById('back-to-chanting-btn'),
+            dashboardView: document.getElementById('dashboard-view'), backToChantingBtn: document.getElementById('back-to-chanting-btn'),
             dbGrandTotal: document.getElementById('db-grand-total'), dbStreak: document.getElementById('db-streak'),
             dbTodayTotal: document.getElementById('db-today-total'), weeklyChart: document.getElementById('weekly-chart'),
             detailedHistoryContainer: document.getElementById('detailed-history-container'), deleteAllHistoryBtn: document.getElementById('delete-all-history-btn'),
@@ -274,16 +265,10 @@
         async function switchView(view) {
             state.currentView = view;
             if (view === 'dashboard') {
+                renderDashboard();
                 DOMElements.chantingView.classList.add('hidden');
                 DOMElements.sidebar.classList.add('hidden');
                 DOMElements.dashboardView.classList.remove('hidden');
-                DOMElements.dashboardLoader.classList.remove('hidden');
-                DOMElements.dashboardContent.classList.add('hidden');
-                // Simulate data fetching for dashboard
-                await new Promise(res => setTimeout(res, 50));
-                renderDashboard();
-                DOMElements.dashboardLoader.classList.add('hidden');
-                DOMElements.dashboardContent.classList.remove('hidden');
             } else {
                 DOMElements.chantingView.classList.remove('hidden');
                 DOMElements.sidebar.classList.remove('hidden');
@@ -387,8 +372,14 @@
         
         function renderUserInfo() {
              const lang = state.settings.language; const t = TRANSLATIONS[lang];
-             if (state.user) { DOMElements.userInfoContainer.innerHTML = `<div class="flex items-center mb-2"><img src="${state.user.photoURL}" alt="User" class="w-10 h-10 rounded-full mr-3"><div class="flex-grow"><p class="font-semibold text-gray-800">${state.user.displayName}</p><button id="sign-out-button" class="text-xs text-red-500 hover:underline">${t.signOutBtn}</button></div></div><button id="view-progress-btn" class="w-full bg-orange-500 text-white font-semibold py-2 px-3 rounded-lg hover:bg-orange-600 transition text-sm">${t.viewProgress}</button>`; document.getElementById('sign-out-button').addEventListener('click', handleSignOut); document.getElementById('view-progress-btn').addEventListener('click', () => switchView('dashboard')); } 
-             else { DOMElements.userInfoContainer.innerHTML = `<p class="text-xs text-gray-600 mb-2">${t.signInPrompt}</p><button id="sign-in-button" class="w-full bg-blue-500 text-white font-semibold py-2 px-3 rounded-lg hover:bg-blue-600 transition text-sm">${t.signInBtn}</button>`; document.getElementById('sign-in-button').addEventListener('click', handleSignIn); }
+             if (state.user) { 
+                DOMElements.userInfoContainer.innerHTML = `<div class="flex items-center mb-2"><img src="${state.user.photoURL}" alt="User" class="w-10 h-10 rounded-full mr-3"><div class="flex-grow"><p class="font-semibold text-gray-800">${state.user.displayName}</p><button id="sign-out-button" class="text-xs text-red-500 hover:underline">${t.signOutBtn}</button></div></div><button id="view-progress-btn" class="w-full bg-orange-500 text-white font-semibold py-2 px-3 rounded-lg hover:bg-orange-600 transition text-sm flex items-center justify-center disabled:opacity-75"><svg id="progress-btn-spinner" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span id="progress-btn-text">${t.viewProgress}</span></button>`;
+                document.getElementById('sign-out-button').addEventListener('click', handleSignOut); 
+                document.getElementById('view-progress-btn').addEventListener('click', handleViewProgress);
+            } else { 
+                DOMElements.userInfoContainer.innerHTML = `<p class="text-xs text-gray-600 mb-2">${t.signInPrompt}</p><button id="sign-in-button" class="w-full bg-blue-500 text-white font-semibold py-2 px-3 rounded-lg hover:bg-blue-600 transition text-sm">${t.signInBtn}</button>`; 
+                document.getElementById('sign-in-button').addEventListener('click', handleSignIn); 
+            }
         }
 
         function initAudio() { if (audioContext) return; try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { console.error("Web Audio API not supported."); } }
@@ -404,7 +395,25 @@
         function createHandler(key, isSetting = false) { return (e) => { const value = e.target.value; if(isSetting) state.settings[key] = value; else state[key] = value; if (isSetting && key === 'blinkSpeed') updateBlinking(); render(); saveState(); } }
         async function handleSignIn() { if (!auth) return; try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (error) { if (error.code === 'auth/unauthorized-domain') DOMElements.errorModal.classList.remove('hidden'); else console.error('Auth error:', error); } }
         async function handleSignOut() { if (!auth) return; await saveState(); await signOut(auth); }
-        
+        async function handleViewProgress() {
+            const btn = document.getElementById('view-progress-btn');
+            const spinner = btn.querySelector('svg');
+            const text = btn.querySelector('span');
+            
+            btn.disabled = true;
+            spinner.classList.remove('hidden');
+            text.textContent = TRANSLATIONS[state.settings.language].loading;
+
+            await new Promise(res => setTimeout(res, 200)); // Simulate fetch time
+            
+            playTickSound();
+            switchView('dashboard');
+            
+            btn.disabled = false;
+            spinner.classList.add('hidden');
+            text.textContent = TRANSLATIONS[state.settings.language].viewProgress;
+        }
+
         function showConfirmation(titleKey, textKey, onConfirm) {
             const t = TRANSLATIONS[state.settings.language];
             DOMElements.modalTitle.textContent = t[titleKey];
@@ -436,12 +445,13 @@
             DOMElements.modalConfirmBtn.addEventListener('click', () => { if(confirmationCallback) confirmationCallback(); DOMElements.confirmationModal.classList.add('hidden'); confirmationCallback = null; });
 
             document.addEventListener('visibilitychange', handleVisibilityChange);
+            
+            // Render initial state instantly, then check auth in background
+            render();
+            DOMElements.appContainer.classList.remove('opacity-0');
 
             if (auth) {
                 onAuthStateChanged(auth, async (user) => {
-                    DOMElements.loadingOverlay.classList.remove('hidden');
-                    DOMElements.appContainer.classList.add('opacity-0');
-                    
                     state.isBlinking = false;
                     await updateBlinking(); // ensure blinking stops
 
@@ -452,18 +462,8 @@
                         state = getDefaultState(); 
                     }
                     
-                    render(); // Render with the new state
-                    
-                    // Hide loader after a short delay to ensure UI is fully painted
-                    setTimeout(() => {
-                        DOMElements.loadingOverlay.classList.add('hidden');
-                        DOMElements.appContainer.classList.remove('opacity-0');
-                    }, 200);
+                    render(); // Re-render with the correct user state
                 });
-            } else {
-                render(); 
-                DOMElements.loadingOverlay.classList.add('hidden');
-                DOMElements.appContainer.classList.remove('opacity-0');
             }
         }
 
