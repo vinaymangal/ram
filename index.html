@@ -1,677 +1,527 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>राम नाम खाता</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <title>जप माला | डिजिटल जाप साथी</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <style>
+        /* Custom Styles */
         body {
-            display: flex;
-            flex-direction: column;
-            margin: 0;
-            font-family: Arial, sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            background-color: #ffffe0;
-            transition: background-color 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            /* Prevent text selection on the blinking name */
+            user-select: none;
+            -webkit-user-select: none; 
         }
+        
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
-        /* Sidebar toggle button */
-        #sidebarToggle {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            z-index: 1000;
-            background-color: #e0e0e0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        #sidebarToggle:hover {
-            background-color: #d0d0d0;
-        }
-
-        /* Side controls */
-        #controls {
-            position: fixed;
-            top: 0;
-            left: -200px;
-            width: 200px;
-            height: 100%;
-            background-color: #f5f5f5;
-            border-right: 1px solid #ccc;
-            padding: 10px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            overflow-y: auto;
-            transition: left 0.3s ease;
-            z-index: 900;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-        }
-
-        #controls.visible {
-            left: 0;
-        }
-
-        button, select {
-            padding: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            border: 1px solid #ddd;
-            background: #e9e9e9;
-            color: #555;
-            border-radius: 4px;
-            transition: all 0.2s ease;
-        }
-
-        button:hover, select:hover {
-            background: #d9d9d9;
-        }
-
-        #googleSignInButton {
-            background-color: #4285F4;
-            color: white;
-            border: none;
-        }
-
-        #googleSignInButton:hover {
-            background-color: #3267D6;
-        }
-
-        #userInfo {
-            font-size: 14px;
-            color: #666;
-            margin: 5px 0;
-            padding: 5px;
-            background-color: #f9f9f9;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        #mainContent {
-            flex-grow: 1;
+        /* The main blinking text container */
+        #deity-name-container {
+            /* This ensures the text is perfectly centered */
             display: flex;
             justify-content: center;
             align-items: center;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-            transition: margin-left 0.3s ease;
-        }
-
-        .ram-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        h1 {
-            margin-bottom: 5px;
-            color: #777;
-            font-size: 4vmin;
-        }
-
-        .ram-description {
-            font-size: 2.5vmin;
-            margin-bottom: 20px;
-            color: #777;
-        }
-
-        .blink {
-            font-size: 35vmin;
-            font-weight: bold;
-            color: #ff0000;
-            transition: font-size 0.3s ease;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-        }
-
-        footer {
-            background-color: rgba(250, 250, 250, 0.8);
-            border-top: 1px solid #ddd;
-            padding: 10px;
-            font-size: 2vmin;
-            color: #444;
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        #counter p, #history p {
-            margin: 4px 0;
-        }
-
-        #history {
-            max-height: 150px;
-            overflow-y: auto;
             width: 100%;
-            max-width: 300px;
+            height: 100%;
+            font-weight: bold;
+            color: #ef4444; /* Red-500 */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            transition: font-size 0.3s ease;
         }
 
-        @media (max-width: 600px) {
-            #controls {
-                width: 180px;
-                left: -180px;
-            }
-            
-            footer {
-                flex-direction: column;
-                align-items: center;
-                font-size: 3vmin;
-            }
-            
-            h1 {
-                font-size: 5vmin;
-            }
-            
-            .ram-description {
-                font-size: 3.5vmin;
-            }
+        /* Sidebar transition */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
         }
     </style>
 </head>
-<body>
-    <button id="sidebarToggle">☰</button>
-    
-    <div id="controls">
-        <button id="googleSignInButton">Sign in with Google</button>
-        <div id="userInfo"></div>
-        <button id="fullscreenButton">Full Screen</button>
-        <button id="toggleBlink">Stop Blinking</button>
-        <select id="blinkSpeed">
-            <option value="100">0.1s</option>
-            <option value="200">0.2s</option>
-            <option value="300">0.3s</option>
-            <option value="400" selected>0.4s</option>
-            <option value="500">0.5s</option>
-            <option value="600">0.6s</option>
-            <option value="700">0.7s</option>
-            <option value="800">0.8s</option>
-            <option value="900">0.9s</option>
-            <option value="1000">1.0s</option>
-        </select>
-        <select id="fontSize">
-            <option value="small">Small</option>
-            <option value="medium">Medium</option>
-            <option value="large" selected>Large</option>
-            <option value="xlarge">Extra Large</option>
-        </select>
-        <select id="bgColor">
-            <option value="#ffffff">White</option>
-            <option value="#f0f0f0">Light Gray</option>
-            <option value="#000000">Black</option>
-            <option value="#ffffe0" selected>Light Yellow</option>
-        </select>
-        <div id="counter">
-            <p id="dateDisplay">Date: --</p>
-            <p>Mala: <span id="malaCount">0</span></p>
-            <p>Count: <span id="countDisplay">0</span></p>
-        </div>
-        <div id="history">
-            <p><strong>History</strong></p>
-            <div id="historyContent"></div>
-            <p>Total Mala: <span id="totalMala">0</span></p>
-            <p>Total Count: <span id="totalCount">0</span></p>
+<body class="bg-orange-50 text-gray-800 antialiased overflow-hidden">
+
+    <div id="app-container" class="w-full h-[100dvh] flex">
+
+        <!-- Sidebar / Controls -->
+        <aside id="sidebar" class="absolute top-0 left-0 h-full w-72 bg-white shadow-lg p-4 flex flex-col z-20 transform -translate-x-full md:relative md:transform-none md:w-80">
+            <!-- Sidebar Header -->
+            <div class="flex justify-between items-center border-b pb-3 mb-3">
+                <h2 class="text-xl font-bold text-orange-800" data-i18n="controlsTitle">Controls</h2>
+                <button id="close-sidebar-btn" class="md:hidden p-1 rounded-full hover:bg-gray-200">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Controls Content -->
+            <div class="flex-grow overflow-y-auto pr-1">
+                <div class="space-y-4">
+                    <!-- Account -->
+                    <div>
+                        <h3 class="font-semibold text-gray-700 mb-2" data-i18n="account">Account</h3>
+                        <div id="user-info-container" class="bg-gray-100 p-3 rounded-lg text-sm"></div>
+                    </div>
+
+                    <!-- Chanting Controls -->
+                    <div>
+                        <h3 class="font-semibold text-gray-700 mb-2" data-i18n="chantingControls">Chanting Controls</h3>
+                        <div class="bg-gray-100 p-3 rounded-lg space-y-3">
+                            <button id="toggle-blink-btn" class="w-full bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition"></button>
+                            <div>
+                                <label for="deity-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="selectDeity">Deity</label>
+                                <select id="deity-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md"></select>
+                            </div>
+                            <div>
+                                <label for="blink-speed-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="blinkSpeed">Blink Speed</label>
+                                <select id="blink-speed-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md">
+                                    <option value="1000">1.0s</option>
+                                    <option value="900">0.9s</option>
+                                    <option value="800">0.8s</option>
+                                    <option value="700">0.7s</option>
+                                    <option value="600">0.6s</option>
+                                    <option value="500">0.5s</option>
+                                    <option value="400" selected>0.4s</option>
+                                    <option value="300">0.3s</option>
+                                    <option value="200">0.2s</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Appearance -->
+                    <div>
+                        <h3 class="font-semibold text-gray-700 mb-2" data-i18n="appearance">Appearance</h3>
+                        <div class="bg-gray-100 p-3 rounded-lg space-y-3">
+                             <div>
+                                <label for="font-size-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="fontSize">Font Size</label>
+                                <select id="font-size-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md">
+                                    <option value="30vmin" data-i18n="optSmall">Small</option>
+                                    <option value="40vmin" selected data-i18n="optMedium">Medium</option>
+                                    <option value="50vmin" data-i18n="optLarge">Large</option>
+                                    <option value="60vmin" data-i18n="optXLarge">Extra Large</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="bg-color-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="backgroundColor">Background Color</label>
+                                <select id="bg-color-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md"></select>
+                            </div>
+                             <div>
+                                <label for="language-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="language">Language</label>
+                                <select id="language-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md">
+                                    <option value="hi">हिन्दी</option>
+                                    <option value="en">English</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Footer / Stats -->
+            <div class="border-t pt-3 mt-3 text-sm">
+                <div class="grid grid-cols-2 gap-2 text-center">
+                    <div class="bg-orange-100 p-2 rounded-lg">
+                        <p class="font-medium text-orange-700" data-i18n="chantLabel">Chant</p>
+                        <p id="current-count" class="text-2xl font-bold text-orange-900">0</p>
+                    </div>
+                    <div class="bg-amber-100 p-2 rounded-lg">
+                        <p class="font-medium text-amber-700" data-i18n="malaLabel">Mala</p>
+                        <p id="mala-count" class="text-2xl font-bold text-amber-900">0</p>
+                    </div>
+                </div>
+                <div class="mt-2 text-center bg-gray-100 p-2 rounded-lg">
+                    <p class="font-medium text-gray-600" data-i18n="totalChants">Total Chants</p>
+                    <p id="total-chants" class="text-xl font-bold text-gray-800">0</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-grow relative flex flex-col items-center justify-center">
+            <!-- Hamburger Menu Button -->
+            <button id="open-sidebar-btn" class="absolute top-4 left-4 z-10 p-2 rounded-full bg-white/70 backdrop-blur-sm md:hidden">
+                <i class="ph-bold ph-list text-2xl"></i>
+            </button>
+            
+            <!-- Title -->
+            <div class="text-center absolute top-4">
+                 <h1 class="text-xl font-bold text-gray-600" data-i18n="mainTitle">राम नाम खाता</h1>
+                 <p class="text-sm text-gray-500" data-i18n="mainSubtitle">राम नाम बैंक में खाता खोलो, जप का खाता चालु</p>
+            </div>
+
+            <!-- Blinking Deity Name -->
+            <div id="deity-name-container">राम</div>
+        </main>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+            <h3 class="text-lg font-bold text-red-600 mb-2">Firebase Authentication Error</h3>
+            <p class="text-sm text-gray-700 mb-4">
+                This website's domain is not authorized to use Firebase Authentication. This is a security setting in your Firebase project.
+            </p>
+            <p class="text-sm font-semibold text-gray-800">How to fix:</p>
+            <ol class="list-decimal list-inside text-sm text-gray-600 space-y-1 mt-2">
+                <li>Go to your <a href="https://console.firebase.google.com/" target="_blank" class="text-blue-500 hover:underline">Firebase Console</a>.</li>
+                <li>Select your project: <strong>ramnaam1</strong></li>
+                <li>Go to <strong>Authentication</strong> > <strong>Settings</strong> tab.</li>
+                <li>Under <strong>Authorized domains</strong>, click <strong>Add domain</strong>.</li>
+                <li>Enter the domain where this app is running and click Add.</li>
+            </ol>
+            <button id="close-error-modal" class="mt-6 w-full bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition">
+                Close
+            </button>
         </div>
     </div>
 
-    <div id="mainContent">
-        <div class="ram-container">
-            <h1>राम नाम खाता</h1>
-            <p class="ram-description">राम नाम बैंक में खाता खोलो, जप का खाता चालु</p>
-            <div class="blink">राम</div>
-        </div>
-    </div>
 
-    <script>
-        // Firebase Configuration
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- CONFIGURATION ---
+        const DEITIES = [
+            { id: 'ram', name_hi: 'श्री राम', name_en: 'Shri Ram', mantra_hi: 'राम', mantra_en: 'Ram' },
+            { id: 'krishna', name_hi: 'श्री कृष्ण', name_en: 'Shri Krishna', mantra_hi: 'कृष्ण', mantra_en: 'Krishna' },
+            { id: 'shiva', name_hi: 'भगवान शिव', name_en: 'Lord Shiva', mantra_hi: 'शिव', mantra_en: 'Shiva' },
+            { id: 'hanuman', name_hi: 'हनुमान', name_en: 'Hanuman', mantra_hi: 'हनुमान', mantra_en: 'Hanuman' },
+        ];
+        
+        const TRANSLATIONS = {
+            'hi': {
+                'controlsTitle': 'नियंत्रण', 'account': 'अकाउंट', 'chantingControls': 'जाप नियंत्रण', 'toggleBlinkStart': 'जाप शुरू करें', 'toggleBlinkStop': 'जाप रोकें',
+                'selectDeity': 'देवता', 'blinkSpeed': 'जाप गति', 'appearance': 'दिखावट', 'fontSize': 'अक्षर का आकार', 'optSmall': 'छोटा', 'optMedium': 'मध्यम', 'optLarge': 'बड़ा', 'optXLarge': 'अतिरिक्त बड़ा',
+                'backgroundColor': 'बैकग्राउंड का रंग', 'optLightOrange': 'हल्का नारंगी', 'optWhite': 'सफ़ेद', 'optLightGray': 'हल्का ग्रे', 'optLightBlue': 'हल्का नीला',
+                'language': 'भाषा', 'chantLabel': 'जाप', 'malaLabel': 'माला', 'totalChants': 'कुल जाप',
+                'signInPrompt': 'अपनी प्रगति सिंक करने के लिए साइन इन करें।', 'signInBtn': 'Google से साइन इन करें', 'signOutBtn': 'साइन आउट',
+                'mainTitle': 'राम नाम खाता', 'mainSubtitle': 'राम नाम बैंक में खाता खोलो, जप का खाता चालु',
+            },
+            'en': {
+                'controlsTitle': 'Controls', 'account': 'Account', 'chantingControls': 'Chanting Controls', 'toggleBlinkStart': 'Start Chanting', 'toggleBlinkStop': 'Stop Chanting',
+                'selectDeity': 'Deity', 'blinkSpeed': 'Blink Speed', 'appearance': 'Appearance', 'fontSize': 'Font Size', 'optSmall': 'Small', 'optMedium': 'Medium', 'optLarge': 'Large', 'optXLarge': 'Extra Large',
+                'backgroundColor': 'Background Color', 'optLightOrange': 'Light Orange', 'optWhite': 'White', 'optLightGray': 'Light Gray', 'optLightBlue': 'Light Blue',
+                'language': 'Language', 'chantLabel': 'Chant', 'malaLabel': 'Mala', 'totalChants': 'Total Chants',
+                'signInPrompt': 'Sign in to sync your progress.', 'signInBtn': 'Sign in with Google', 'signOutBtn': 'Sign Out',
+                'mainTitle': 'Ram Naam Khata', 'mainSubtitle': 'Open an account in the Ram Naam bank, start your chanting account',
+            }
+        };
+
         const firebaseConfig = {
             apiKey: "AIzaSyDX4Bm3HBOMTZ2E9f_pPUKykzANumG6Bpg",
             authDomain: "ramnaam1.firebaseapp.com",
             projectId: "ramnaam1",
             storageBucket: "ramnaam1.firebasestorage.app",
             messagingSenderId: "399389434845",
-            appId: "1:399389434845:web:bf67b08826207481054c34",
-            measurementId: "G-SGKLGDFFMV"
+            appId: "1:399389434845:web:bf67b08826207481054c34"
         };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        // Enable Firestore offline persistence
-        db.enablePersistence().catch(err => {
-            if (err.code === 'failed-precondition') {
-                console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-            } else if (err.code === 'unimplemented') {
-                console.warn('The current browser does not support offline persistence.');
-            }
-        });
-
-        // Google Sign-In Provider
-        const provider = new firebase.auth.GoogleAuthProvider();
-
-        // Elements
-        const text = document.querySelector('.blink');
-        const controls = document.getElementById('controls');
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const blinkSpeedSelect = document.getElementById('blinkSpeed');
-        const fontSizeSelect = document.getElementById('fontSize');
-        const bgColorSelect = document.getElementById('bgColor');
-        const malaCountDisplay = document.getElementById('malaCount');
-        const countDisplay = document.getElementById('countDisplay');
-        const dateDisplay = document.getElementById('dateDisplay');
-        const historyContent = document.getElementById('historyContent');
-        const totalMalaDisplay = document.getElementById('totalMala');
-        const totalCountDisplay = document.getElementById('totalCount');
-        const userInfo = document.getElementById('userInfo');
-        const googleSignInButton = document.getElementById('googleSignInButton');
-        const toggleBlinkButton = document.getElementById('toggleBlink');
-        const fullscreenButton = document.getElementById('fullscreenButton');
-
-        // Variables
-        let mala = 0;
-        let count = 0;
-        let totalMala = 0;
-        let totalCount = 0;
-        let blinkInterval;
-        let isBlinking = true;
-        let user = null;
-        let currentDate = getFormattedDate(new Date());
-
-        // Default settings
-        const defaultSettings = {
-            blinkSpeed: '400', // 0.4s
-            fontSize: 'large',
-            bgColor: '#ffffe0' // Light Yellow
-        };
-
-        // Toggle sidebar
-        sidebarToggle.addEventListener('click', function() {
-            controls.classList.toggle('visible');
-        });
-
-        // Close sidebar when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!controls.contains(event.target) && event.target !== sidebarToggle) {
-                controls.classList.remove('visible');
-            }
-        });
-
-        // Format date as YYYY-MM-DD
-        function getFormattedDate(date) {
-            return date.toISOString().split('T')[0];
-        }
-
-        // Load settings from local storage as a fallback
-        const loadLocalSettings = () => {
-            const settings = {
-                blinkSpeed: localStorage.getItem('blinkSpeed') || defaultSettings.blinkSpeed,
-                fontSize: localStorage.getItem('fontSize') || defaultSettings.fontSize,
-                bgColor: localStorage.getItem('bgColor') || defaultSettings.bgColor
-            };
-            blinkSpeedSelect.value = settings.blinkSpeed;
-            fontSizeSelect.value = settings.fontSize;
-            bgColorSelect.value = settings.bgColor;
-            updateFontSize(settings.fontSize);
-            document.body.style.backgroundColor = settings.bgColor;
-        };
-
-        // Load mala and count from local storage as a fallback
-        const loadLocalCounts = () => {
-            mala = parseInt(localStorage.getItem(`mala_${currentDate}_${user?.uid || 'guest'}`)) || 0;
-            count = parseInt(localStorage.getItem(`count_${currentDate}_${user?.uid || 'guest'}`)) || 0;
-            malaCountDisplay.textContent = mala;
-            countDisplay.textContent = count;
-        };
-
-        // Save settings to local storage
-        const saveLocalSettings = () => {
-            localStorage.setItem('blinkSpeed', blinkSpeedSelect.value);
-            localStorage.setItem('fontSize', fontSizeSelect.value);
-            localStorage.setItem('bgColor', bgColorSelect.value);
-        };
-
-        // Save mala and count to local storage
-        const saveLocalCounts = () => {
-            localStorage.setItem(`mala_${currentDate}_${user?.uid || 'guest'}`, mala);
-            localStorage.setItem(`count_${currentDate}_${user?.uid || 'guest'}`, count);
-        };
-
-        // Update font size based on selection
-        function updateFontSize(size) {
-            switch(size) {
-                case 'small':
-                    text.style.fontSize = '25vmin';
-                    break;
-                case 'medium':
-                    text.style.fontSize = '30vmin';
-                    break;
-                case 'large':
-                    text.style.fontSize = '35vmin';
-                    break;
-                case 'xlarge':
-                    text.style.fontSize = '40vmin';
-                    break;
-            }
-        }
-
-        // Apply default settings on initial load
-        loadLocalSettings();
-
-        // Blink function
-        function blink() {
-            text.style.visibility = (text.style.visibility === 'hidden') ? 'visible' : 'hidden';
-            if (text.style.visibility === 'visible') {
-                count++;
-                if (count === 108) {
-                    mala++;
-                    count = 0;
-                    updateFirestore();
-                }
-                countDisplay.textContent = count;
-                malaCountDisplay.textContent = mala;
-                saveLocalCounts();
-            }
-        }
-
-        // Update Firestore with current day's data
-        function updateFirestore() {
-            if (!user) return;
-            const userRef = db.collection('users').doc(user.uid);
-            userRef.set({
-                settings: {
-                    blinkSpeed: blinkSpeedSelect.value,
-                    fontSize: fontSizeSelect.value,
-                    bgColor: bgColorSelect.value
-                }
-            }, { merge: true }).catch(error => {
-                console.error('Error saving settings:', error);
-                // Do not alert for offline errors
-                if (!error.message.includes('offline')) {
-                    console.warn('Failed to save settings: ' + error.message);
-                }
-            });
-
-            userRef.collection('dailyCounts').doc(currentDate).set({
-                date: currentDate,
-                mala: mala,
-                count: count,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch(error => {
-                console.error('Error saving daily counts:', error);
-                if (!error.message.includes('offline')) {
-                    console.warn('Failed to save daily counts: ' + error.message);
-                }
-            });
-        }
-
-        // Load user data from Firestore
-        function loadUserData() {
-            if (!user) return;
-            const userRef = db.collection('users').doc(user.uid);
-
-            // Load settings
-            userRef.get().then(doc => {
-                if (doc.exists && doc.data().settings) {
-                    const settings = doc.data().settings;
-                    blinkSpeedSelect.value = settings.blinkSpeed || defaultSettings.blinkSpeed;
-                    fontSizeSelect.value = settings.fontSize || defaultSettings.fontSize;
-                    bgColorSelect.value = settings.bgColor || defaultSettings.bgColor;
-                    updateFontSize(settings.fontSize);
-                    document.body.style.backgroundColor = settings.bgColor;
-                    saveLocalSettings();
-                    if (isBlinking) {
-                        clearInterval(blinkInterval);
-                        blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
-                    }
-                } else {
-                    // If no settings exist, apply defaults and save them
-                    blinkSpeedSelect.value = defaultSettings.blinkSpeed;
-                    fontSizeSelect.value = defaultSettings.fontSize;
-                    bgColorSelect.value = defaultSettings.bgColor;
-                    updateFontSize(defaultSettings.fontSize);
-                    document.body.style.backgroundColor = defaultSettings.bgColor;
-                    saveLocalSettings();
-                    updateFirestore();
-                }
-            }).catch(error => {
-                console.error('Error loading settings:', error);
-                // Use local settings if Firestore fails
-                loadLocalSettings();
-                if (!error.message.includes('offline')) {
-                    console.warn('Failed to load settings: ' + error.message);
-                }
-            });
-
-            // Load daily counts and history
-            userRef.collection('dailyCounts').orderBy('timestamp', 'desc').get().then(snapshot => {
-                totalMala = 0;
-                totalCount = 0;
-                historyContent.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    if (doc.id === currentDate) {
-                        mala = data.mala || 0;
-                        count = data.count || 0;
-                        malaCountDisplay.textContent = mala;
-                        countDisplay.textContent = count;
-                        saveLocalCounts();
-                    }
-                    totalMala += data.mala || 0;
-                    totalCount += (data.count || 0) + (data.mala || 0) * 108;
-                    historyContent.innerHTML += `<p>${data.date}: Mala: ${data.mala || 0}, Count: ${data.count || 0}</p>`;
-                });
-                totalMalaDisplay.textContent = totalMala;
-                totalCountDisplay.textContent = totalCount;
-            }).catch(error => {
-                console.error('Error loading history:', error);
-                // Use local counts if Firestore fails
-                loadLocalCounts();
-                if (!error.message.includes('offline')) {
-                    console.warn('Failed to load history: ' + error.message);
-                }
-            });
-
-            dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-        }
-
-        // Reset mala and count if date has changed
-        function checkDateChange() {
-            const today = getFormattedDate(new Date());
-            if (today !== currentDate) {
-                currentDate = today;
-                mala = 0;
-                count = 0;
-                malaCountDisplay.textContent = mala;
-                countDisplay.textContent = count;
-                saveLocalCounts();
-                updateFirestore();
-                loadUserData();
-            }
-        }
-
-        // Google Sign-In
-        googleSignInButton.addEventListener('click', () => {
-            auth.signInWithPopup(provider).then(result => {
-                user = result.user;
-                userInfo.textContent = `${user.displayName} | Sign Out`;
-                googleSignInButton.style.display = 'none'; // Hide the Sign-In button after login
-                loadUserData();
-            }).catch(error => {
-                console.error('Sign-In Error:', error);
-                alert('Failed to sign in: ' + error.message);
-            });
-        });
-
-        // Sign Out handler
-        userInfo.addEventListener('click', () => {
-            if (user) {
-                auth.signOut().then(() => {
-                    user = null;
-                    userInfo.textContent = '';
-                    googleSignInButton.style.display = 'block'; // Show the Sign-In button after sign-out
-                    mala = 0;
-                    count = 0;
-                    totalMala = 0;
-                    totalCount = 0;
-                    malaCountDisplay.textContent = '0';
-                    countDisplay.textContent = '0';
-                    historyContent.innerHTML = '';
-                    totalMalaDisplay.textContent = '0';
-                    totalCountDisplay.textContent = '0';
-                    dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                    // Reset to default settings on sign-out
-                    blinkSpeedSelect.value = defaultSettings.blinkSpeed;
-                    fontSizeSelect.value = defaultSettings.fontSize;
-                    bgColorSelect.value = defaultSettings.bgColor;
-                    updateFontSize(defaultSettings.fontSize);
-                    document.body.style.backgroundColor = defaultSettings.bgColor;
-                    saveLocalSettings();
-                }).catch(error => {
-                    console.error('Sign-Out Error:', error);
-                    alert('Failed to sign out: ' + error.message);
-                });
-            }
-        });
-
-        // Check authentication state
-        auth.onAuthStateChanged(userAuth => {
-            user = userAuth;
-            if (user) {
-                userInfo.textContent = `${user.displayName} | Sign Out`;
-                googleSignInButton.style.display = 'none'; // Hide the Sign-In button if user is already logged in
-                loadUserData();
-                loadLocalCounts(); // Load local counts immediately
-            } else {
-                userInfo.textContent = '';
-                googleSignInButton.style.display = 'block'; // Show the Sign-In button if user is not logged in
-            }
-        });
-
-        // Toggle blinking
-        toggleBlinkButton.addEventListener('click', function() {
-            if (isBlinking) {
-                clearInterval(blinkInterval);
-                text.style.visibility = 'visible';
-                this.textContent = 'Start Blinking';
-            } else {
-                blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
-                this.textContent = 'Stop Blinking';
-            }
-            isBlinking = !isBlinking;
-            
-            // Wake lock for keeping screen on
-            if (isBlinking) {
-                requestWakeLock();
-            } else {
-                releaseWakeLock();
-            }
-        });
-
-        // Full-screen logic
-        fullscreenButton.addEventListener('click', function() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.error(`Error enabling full-screen mode: ${err.message}`);
-                });
-                this.textContent = 'Exit Full Screen';
-            } else {
-                document.exitFullscreen();
-                this.textContent = 'Full Screen';
-            }
-        });
-
-        // Blink speed control
-        blinkSpeedSelect.addEventListener('change', function() {
-            if (user) {
-                updateFirestore();
-            }
-            saveLocalSettings();
-            if (isBlinking) {
-                clearInterval(blinkInterval);
-                blinkInterval = setInterval(blink, parseInt(this.value));
-            }
-        });
-
-        // Font size control
-        fontSizeSelect.addEventListener('change', function() {
-            updateFontSize(this.value);
-            if (user) {
-                updateFirestore();
-            }
-            saveLocalSettings();
-        });
-
-        // Background color control
-        bgColorSelect.addEventListener('change', function() {
-            document.body.style.backgroundColor = this.value;
-            if (user) {
-                updateFirestore();
-            }
-            saveLocalSettings();
-        });
-
-        // Stop blinking when window loses focus
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'hidden') {
-                if (isBlinking) {
-                    clearInterval(blinkInterval);
-                }
-            } else {
-                if (isBlinking) {
-                    blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
-                }
-            }
-        });
-
-        // Prevent screen sleep/rest mode while blinking
-        let wakeLock = null;
-        async function requestWakeLock() {
-            try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('Wake Lock is active');
-                }
-            } catch (err) {
-                console.error(`Wake Lock failed: ${err.message}`);
-            }
-        }
-
-        async function releaseWakeLock() {
-            if (wakeLock !== null) {
-                await wakeLock.release();
-                wakeLock = null;
-                console.log('Wake Lock released');
-            }
-        }
-
-        // Initialize blinking
-        blinkInterval = setInterval(blink, parseInt(blinkSpeedSelect.value));
-        dateDisplay.textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
-        // Request wake lock initially
-        requestWakeLock();
-        window.addEventListener('unload', releaseWakeLock);
-
-        // Check for date change every minute
-        setInterval(checkDateChange, 60000);
         
-        // Initialize local data
-        loadLocalCounts();
+        // --- APPLICATION STATE ---
+        let state = {
+            user: null,
+            isBlinking: true,
+            currentDeityId: 'ram',
+            history: {}, // { 'YYYY-MM-DD': { deityId: { chants: 0, malas: 0 } } }
+            settings: {
+                language: 'hi',
+                blinkSpeed: 400,
+                fontSize: '40vmin',
+                bgColor: 'bg-orange-50'
+            }
+        };
+        let blinkInterval;
+        let wakeLock = null;
+        let wakeLockFailed = false; // Flag to prevent repeated wake lock errors
+
+        // --- DOM ELEMENTS ---
+        const DOMElements = {
+            html: document.documentElement,
+            appBody: document.body,
+            appTitle: document.querySelector('title'),
+            sidebar: document.getElementById('sidebar'),
+            openSidebarBtn: document.getElementById('open-sidebar-btn'),
+            closeSidebarBtn: document.getElementById('close-sidebar-btn'),
+            deityNameContainer: document.getElementById('deity-name-container'),
+            userInfoContainer: document.getElementById('user-info-container'),
+            toggleBlinkBtn: document.getElementById('toggle-blink-btn'),
+            deitySelector: document.getElementById('deity-selector'),
+            blinkSpeedSelector: document.getElementById('blink-speed-selector'),
+            fontSizeSelector: document.getElementById('font-size-selector'),
+            bgColorSelector: document.getElementById('bg-color-selector'),
+            languageSelector: document.getElementById('language-selector'),
+            currentCount: document.getElementById('current-count'),
+            malaCount: document.getElementById('mala-count'),
+            totalChants: document.getElementById('total-chants'),
+            errorModal: document.getElementById('error-modal'),
+            closeErrorModalBtn: document.getElementById('close-error-modal'),
+        };
+
+        // --- FIREBASE INITIALIZATION ---
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (error) {
+            console.error("Firebase not configured properly. App will run in offline mode. Error:", error);
+        }
+        
+        // --- CORE LOGIC ---
+        
+        function translateUI() {
+            const lang = state.settings.language;
+            DOMElements.html.lang = lang;
+            const translations = TRANSLATIONS[lang];
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                if (translations[el.dataset.i18n]) {
+                    el.textContent = translations[el.dataset.i18n];
+                }
+            });
+
+            DOMElements.toggleBlinkBtn.textContent = translations[state.isBlinking ? 'toggleBlinkStop' : 'toggleBlinkStart'];
+            
+            // Populate selects that need translation
+            DOMElements.bgColorSelector.innerHTML = `
+                <option value="bg-orange-50">${translations.optLightOrange}</option>
+                <option value="bg-white">${translations.optWhite}</option>
+                <option value="bg-gray-100">${translations.optLightGray}</option>
+                <option value="bg-blue-50">${translations.optLightBlue}</option>
+            `;
+            DOMElements.bgColorSelector.value = state.settings.bgColor;
+        }
+
+        async function saveState() {
+            const dataToSave = {
+                history: state.history,
+                settings: state.settings,
+                currentDeityId: state.currentDeityId
+            };
+            if (state.user && db) {
+                try {
+                    await setDoc(doc(db, 'users', state.user.uid), dataToSave);
+                } catch (e) { console.error("Firebase save failed", e) }
+            } else {
+                localStorage.setItem('japMalaState', JSON.stringify(dataToSave));
+            }
+        }
+        
+        async function loadState() {
+            let loadedData = null;
+            if (state.user && db) {
+                 try {
+                    const docSnap = await getDoc(doc(db, 'users', state.user.uid));
+                    if (docSnap.exists()) loadedData = docSnap.data();
+                } catch(e) { console.error("Firebase load failed", e); }
+            }
+            
+            if (!loadedData) {
+                const localState = localStorage.getItem('japMalaState');
+                if (localState) loadedData = JSON.parse(localState);
+            }
+
+            if (loadedData) {
+                state.history = loadedData.history || {};
+                state.settings = { ...state.settings, ...loadedData.settings };
+                state.currentDeityId = loadedData.currentDeityId || 'ram';
+            }
+        }
+        
+        function getTodaysCount() {
+            const today = new Date().toISOString().split('T')[0];
+            if (!state.history[today]) state.history[today] = {};
+            if (!state.history[today][state.currentDeityId]) {
+                state.history[today][state.currentDeityId] = { chants: 0, malas: 0 };
+            }
+            return state.history[today][state.currentDeityId];
+        }
+
+        function render() {
+            translateUI();
+
+            // Render selectors
+            const lang = state.settings.language;
+            DOMElements.deitySelector.innerHTML = DEITIES.map(d => `<option value="${d.id}">${d['name_'+lang]}</option>`).join('');
+            
+            // Set current values
+            DOMElements.languageSelector.value = state.settings.language;
+            DOMElements.deitySelector.value = state.currentDeityId;
+            DOMElements.blinkSpeedSelector.value = state.settings.blinkSpeed;
+            DOMElements.fontSizeSelector.value = state.settings.fontSize;
+            DOMElements.bgColorSelector.value = state.settings.bgColor;
+            DOMElements.appBody.className = `antialiased overflow-hidden ${state.settings.bgColor}`;
+
+            // Render deity name
+            const deity = DEITIES.find(d => d.id === state.currentDeityId);
+            DOMElements.deityNameContainer.textContent = deity['mantra_' + lang];
+            DOMElements.deityNameContainer.style.fontSize = state.settings.fontSize;
+            
+            // Render counts
+            const todaysCount = getTodaysCount();
+            DOMElements.currentCount.textContent = todaysCount.chants;
+            DOMElements.malaCount.textContent = todaysCount.malas;
+            const totalChants = Object.values(state.history).flatMap(Object.values).reduce((sum, d) => sum + d.chants + (d.malas * 108), 0);
+            DOMElements.totalChants.textContent = totalChants.toLocaleString();
+
+            renderUserInfo();
+        }
+        
+        function renderUserInfo() {
+             const lang = state.settings.language;
+             if (state.user) {
+                DOMElements.userInfoContainer.innerHTML = `
+                    <div class="flex items-center">
+                        <img src="${state.user.photoURL}" alt="User" class="w-10 h-10 rounded-full mr-3">
+                        <div class="flex-grow">
+                            <p class="font-semibold text-gray-800">${state.user.displayName}</p>
+                            <button id="sign-out-button" class="text-xs text-red-500 hover:underline">${TRANSLATIONS[lang].signOutBtn}</button>
+                        </div>
+                    </div>`;
+                document.getElementById('sign-out-button').addEventListener('click', handleSignOut);
+            } else {
+                DOMElements.userInfoContainer.innerHTML = `
+                    <p class="text-xs text-gray-600 mb-2">${TRANSLATIONS[lang].signInPrompt}</p>
+                    <button id="sign-in-button" class="w-full bg-blue-500 text-white font-semibold py-2 px-3 rounded-lg hover:bg-blue-600 transition text-sm">
+                       ${TRANSLATIONS[lang].signInBtn}
+                    </button>`;
+                document.getElementById('sign-in-button').addEventListener('click', handleSignIn);
+            }
+        }
+
+        // --- BLINKING AND WAKELOCK ---
+        function blink() {
+            const container = DOMElements.deityNameContainer;
+            container.style.visibility = (container.style.visibility === 'hidden') ? 'visible' : 'hidden';
+            if (container.style.visibility === 'visible') {
+                const todaysCount = getTodaysCount();
+                todaysCount.chants++;
+                if (todaysCount.chants >= 108) {
+                    todaysCount.malas++;
+                    todaysCount.chants = 0;
+                }
+                render(); // Re-render to update counts
+                saveState();
+            }
+        }
+        
+        async function updateBlinking() {
+            clearInterval(blinkInterval);
+            DOMElements.toggleBlinkBtn.textContent = TRANSLATIONS[state.settings.language][state.isBlinking ? 'toggleBlinkStop' : 'toggleBlinkStart'];
+            
+            // Only blink if the user wants it to AND the tab is visible.
+            if (state.isBlinking && document.visibilityState === 'visible') {
+                blinkInterval = setInterval(blink, state.settings.blinkSpeed);
+                // Try to acquire wake lock only if supported, not already held, and not previously failed.
+                if ('wakeLock' in navigator && !wakeLock && !wakeLockFailed) {
+                    try {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                    } catch (err) {
+                        wakeLockFailed = true; // Set flag to prevent future attempts
+                        console.warn(`Wake Lock could not be acquired and will not be requested again: ${err.message}`);
+                    }
+                }
+            } else {
+                if (wakeLock) {
+                    await wakeLock.release();
+                    wakeLock = null;
+                }
+                DOMElements.deityNameContainer.style.visibility = 'visible';
+            }
+        }
+
+        // --- EVENT HANDLERS ---
+        function handleToggleBlink() {
+            state.isBlinking = !state.isBlinking;
+            updateBlinking();
+            saveState();
+        }
+
+        function handleVisibilityChange() {
+            // When visibility changes, just re-run the logic that decides if we should be blinking.
+            updateBlinking();
+        }
+        
+        function createHandler(key, isSetting = false) {
+            return (e) => {
+                const value = e.target.value;
+                if(isSetting) state.settings[key] = value;
+                else state[key] = value;
+                
+                if (isSetting && key === 'blinkSpeed') {
+                    // When blink speed changes, we need to restart the interval
+                    updateBlinking();
+                }
+                
+                render();
+                saveState();
+            }
+        }
+        
+        async function handleSignIn() {
+            if (!auth) return;
+            try {
+                await signInWithPopup(auth, new GoogleAuthProvider());
+            } catch (error) {
+                if (error.code === 'auth/unauthorized-domain') {
+                    DOMElements.errorModal.classList.remove('hidden');
+                } else {
+                    console.error('An unknown authentication error occurred:', error);
+                }
+            }
+        }
+
+        function handleSignOut() { if (auth) signOut(auth); }
+
+        // --- INITIALIZATION ---
+        async function init() {
+            // Sidebar and Modal listeners
+            DOMElements.openSidebarBtn.addEventListener('click', () => DOMElements.sidebar.classList.remove('-translate-x-full'));
+            DOMElements.closeSidebarBtn.addEventListener('click', () => DOMElements.sidebar.classList.add('-translate-x-full'));
+            DOMElements.closeErrorModalBtn.addEventListener('click', () => DOMElements.errorModal.classList.add('hidden'));
+            
+            // Control listeners
+            DOMElements.toggleBlinkBtn.addEventListener('click', handleToggleBlink);
+            DOMElements.deitySelector.addEventListener('change', createHandler('currentDeityId'));
+            DOMElements.blinkSpeedSelector.addEventListener('change', createHandler('blinkSpeed', true));
+            DOMElements.fontSizeSelector.addEventListener('change', createHandler('fontSize', true));
+            DOMElements.bgColorSelector.addEventListener('change', createHandler('bgColor', true));
+            DOMElements.languageSelector.addEventListener('change', createHandler('language', true));
+
+            // Page Visibility Listener
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            // Firebase Auth State
+            if (auth) {
+                onAuthStateChanged(auth, async (user) => {
+                    state.user = user ? { uid: user.uid, displayName: user.displayName, email: user.email, photoURL: user.photoURL } : null;
+                    await loadState();
+                    render();
+                    updateBlinking();
+                });
+            } else {
+                // Run in offline mode if firebase fails
+                await loadState();
+                render();
+                updateBlinking();
+            }
+        }
+
+        init();
     </script>
 </body>
 </html>
+
