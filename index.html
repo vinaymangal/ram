@@ -54,17 +54,6 @@
             50% { color: #f59e0b; text-shadow: 0 0 25px #f59e0b, 0 0 10px #fde68a; }
             100% { color: #ef4444; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
         }
-
-        .toggle-bg:after {
-            content: '';
-            @apply absolute top-0.5 left-0.5 bg-white border border-gray-300 rounded-full h-5 w-5 transition shadow-sm;
-        }
-        input:checked + .toggle-bg:after {
-            @apply transform translate-x-full;
-        }
-        input:checked + .toggle-bg {
-            @apply bg-green-500;
-        }
     </style>
 </head>
 <body class="bg-orange-50 text-gray-800 antialiased overflow-hidden">
@@ -128,12 +117,9 @@
                                     <option value="hi">हिन्दी</option><option value="en">English</option>
                                 </select>
                             </div>
-                             <div class="flex items-center justify-between pt-1">
-                                <label for="sound-toggle" class="text-sm font-medium text-gray-600" data-i18n="malaSound">Mala Sound</label>
-                                <label for="sound-toggle" class="flex items-center cursor-pointer relative">
-                                    <input type="checkbox" id="sound-toggle" class="sr-only">
-                                    <div class="toggle-bg bg-gray-200 border-2 border-transparent h-6 w-11 rounded-full"></div>
-                                </label>
+                            <div>
+                                <label for="sound-mode-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="soundMode">Sound Mode</label>
+                                <select id="sound-mode-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md"></select>
                             </div>
                         </div>
                     </div>
@@ -225,13 +211,13 @@
         ];
         
         const TRANSLATIONS = {
-            'hi': {'controlsTitle':'नियंत्रण','account':'अकाउंट','chantingControls':'जाप नियंत्रण','toggleBlinkStart':'जाप शुरू करें','toggleBlinkStop':'जाप रोकें','selectDeity':'देवता','blinkSpeed':'जाप गति','appearance':'दिखावट','fontSize':'अक्षर का आकार','optSmall':'छोटा','optMedium':'मध्यम','optLarge':'बड़ा','optXLarge':'अतिरिक्त बड़ा','backgroundColor':'बैकग्राउंड का रंग','optLightOrange':'हल्का नारंगी','optWhite':'सफ़ेद','optLightGray':'हल्का ग्रे','optLightBlue':'हल्का नीला','language':'भाषा','chantLabel':'जाप','malaLabel':'माला','totalChants':'कुल जाप','signInPrompt':'अपनी प्रगति सिंक करने के लिए साइन इन करें।','signInBtn':'Google से साइन इन करें','signOutBtn':'साइन आउट','mainTitle':'राम नाम खाता','mainSubtitle':'राम नाम बैंक में खाता खोलो, जप का खाता चालु','malaSound':'माला ध्वनि','allTimeStats':'कुल आँकड़े','todaysStats':'आज के आँकड़े','dashboardTitle':'मेरी प्रगति','grandTotal':'कुल योग','chantingStreak':'जाप की लड़ी','today':'आज','weeklyProgress':'अंतिम 7 दिन की प्रगति','detailedHistory':'विस्तृत इतिहास','dangerZone':'खतरनाक क्षेत्र','deleteWarning':'यह क्रिया पूर्ववत नहीं की जा सकती।','deleteAllHistory':'सारा इतिहास मिटाएं','viewProgress':'प्रगति देखें','confirmDeleteAllTitle':'क्या आप निश्चित हैं?','confirmDeleteAllText':'आपका सारा जाप इतिहास स्थायी रूप से हटा दिया जाएगा।','confirmDeleteRecordTitle':'रिकॉर्ड हटाएं?','confirmDeleteRecordText':'यह रिकॉर्ड स्थायी रूप से हटा दिया जाएगा।','cancel':'रद्द करें','delete':'मिटाएं', 'noStatsYet': 'अभी तक कोई आँकड़े नहीं हैं।'},
-            'en': {'controlsTitle':'Controls','account':'Account','chantingControls':'Chanting Controls','toggleBlinkStart':'Start Chanting','toggleBlinkStop':'Stop Chanting','selectDeity':'Deity','blinkSpeed':'Blink Speed','appearance':'Appearance','fontSize':'Font Size','optSmall':'Small','optMedium':'Medium','optLarge':'Large','optXLarge':'Extra Large','backgroundColor':'Background Color','optLightOrange':'Light Orange','optWhite':'White','optLightGray':'Light Gray','optLightBlue':'Light Blue','language':'Language','chantLabel':'Chant','malaLabel':'Mala','totalChants':'Grand Total Chants','signInPrompt':'Sign in to sync your progress.','signInBtn':'Sign in with Google','signOutBtn':'Sign Out','mainTitle':'Ram Naam Khata','mainSubtitle':'Open an account in the Ram Naam bank, start your chanting account','malaSound':'Mala Sound','allTimeStats':'All-Time Stats','todaysStats':'Today\'s Stats','dashboardTitle':'My Progress','grandTotal':'Grand Total','chantingStreak':'Chanting Streak','today':'Today','weeklyProgress':'Last 7 Days Progress','detailedHistory':'Detailed History','dangerZone':'Danger Zone','deleteWarning':'This action cannot be undone.','deleteAllHistory':'Delete All History','viewProgress':'View Progress','confirmDeleteAllTitle':'Are you sure?','confirmDeleteAllText':'Your entire chanting history will be permanently deleted.','confirmDeleteRecordTitle':'Delete Record?','confirmDeleteRecordText':'This record will be permanently deleted.','cancel':'Cancel','delete':'Delete', 'noStatsYet': 'No stats yet.'}
+            'hi': {'controlsTitle':'नियंत्रण','account':'अकाउंट','chantingControls':'जाप नियंत्रण','toggleBlinkStart':'जाप शुरू करें','toggleBlinkStop':'जाप रोकें','selectDeity':'देवता','blinkSpeed':'जाप गति','appearance':'दिखावट','fontSize':'अक्षर का आकार','optSmall':'छोटा','optMedium':'मध्यम','optLarge':'बड़ा','optXLarge':'अतिरिक्त बड़ा','backgroundColor':'बैकग्राउंड का रंग','optLightOrange':'हल्का नारंगी','optWhite':'सफ़ेद','optLightGray':'हल्का ग्रे','optLightBlue':'हल्का नीला','language':'भाषा','chantLabel':'जाप','malaLabel':'माला','totalChants':'कुल जाप','signInPrompt':'अपनी प्रगति सिंक करने के लिए साइन इन करें।','signInBtn':'Google से साइन इन करें','signOutBtn':'साइन आउट','mainTitle':'राम नाम खाता','mainSubtitle':'राम नाम बैंक में खाता खोलो, जप का खाता चालु','allTimeStats':'कुल आँकड़े','todaysStats':'आज के आँकड़े','dashboardTitle':'मेरी प्रगति','grandTotal':'कुल योग','chantingStreak':'जाप की लड़ी','today':'आज','weeklyProgress':'अंतिम 7 दिन की प्रगति','detailedHistory':'विस्तृत इतिहास','dangerZone':'खतरनाक क्षेत्र','deleteWarning':'यह क्रिया पूर्ववत नहीं की जा सकती।','deleteAllHistory':'सारा इतिहास मिटाएं','viewProgress':'प्रगति देखें','confirmDeleteAllTitle':'क्या आप निश्चित हैं?','confirmDeleteAllText':'आपका सारा जाप इतिहास स्थायी रूप से हटा दिया जाएगा।','confirmDeleteRecordTitle':'रिकॉर्ड हटाएं?','confirmDeleteRecordText':'यह रिकॉर्ड स्थायी रूप से हटा दिया जाएगा।','cancel':'रद्द करें','delete':'मिटाएं', 'noStatsYet': 'अभी तक कोई आँकड़े नहीं हैं।', 'soundMode':'ध्वनि मोड', 'optSoundNone':'कोई ध्वनि नहीं', 'optSoundTick':'हर जाप पर', 'optSoundMala':'माला पूरी होने पर'},
+            'en': {'controlsTitle':'Controls','account':'Account','chantingControls':'Chanting Controls','toggleBlinkStart':'Start Chanting','toggleBlinkStop':'Stop Chanting','selectDeity':'Deity','blinkSpeed':'Blink Speed','appearance':'Appearance','fontSize':'Font Size','optSmall':'Small','optMedium':'Medium','optLarge':'Large','optXLarge':'Extra Large','backgroundColor':'Background Color','optLightOrange':'Light Orange','optWhite':'White','optLightGray':'Light Gray','optLightBlue':'Light Blue','language':'Language','chantLabel':'Chant','malaLabel':'Mala','totalChants':'Grand Total Chants','signInPrompt':'Sign in to sync your progress.','signInBtn':'Sign in with Google','signOutBtn':'Sign Out','mainTitle':'Ram Naam Khata','mainSubtitle':'Open an account in the Ram Naam bank, start your chanting account','allTimeStats':'All-Time Stats','todaysStats':'Today\'s Stats','dashboardTitle':'My Progress','grandTotal':'Grand Total','chantingStreak':'Chanting Streak','today':'Today','weeklyProgress':'Last 7 Days Progress','detailedHistory':'Detailed History','dangerZone':'Danger Zone','deleteWarning':'This action cannot be undone.','deleteAllHistory':'Delete All History','viewProgress':'View Progress','confirmDeleteAllTitle':'Are you sure?','confirmDeleteAllText':'Your entire chanting history will be permanently deleted.','confirmDeleteRecordTitle':'Delete Record?','confirmDeleteRecordText':'This record will be permanently deleted.','cancel':'Cancel','delete':'Delete', 'noStatsYet': 'No stats yet.', 'soundMode':'Sound Mode', 'optSoundNone':'No Sound', 'optSoundTick':'On Every Chant', 'optSoundMala':'On Mala Completion'}
         };
 
         const firebaseConfig = { apiKey: "AIzaSyDX4Bm3HBOMTZ2E9f_pPUKykzANumG6Bpg", authDomain: "ramnaam1.firebaseapp.com", projectId: "ramnaam1", storageBucket: "ramnaam1.firebasestorage.app", messagingSenderId: "399389434845", appId: "1:399389434845:web:bf67b08826207481054c34" };
         
-        const getDefaultState = () => ({ user: null, isBlinking: true, currentDeityId: 'ram', history: {}, settings: { language: 'hi', blinkSpeed: 400, fontSize: '40vmin', bgColor: 'bg-orange-50', soundEnabled: true }, currentView: 'chanting' });
+        const getDefaultState = () => ({ user: null, isBlinking: false, currentDeityId: 'ram', history: {}, settings: { language: 'hi', blinkSpeed: 400, fontSize: '40vmin', bgColor: 'bg-orange-50', soundMode: 'mala_completion' }, currentView: 'chanting' });
 
         let state = getDefaultState();
         let blinkInterval, wakeLock = null, wakeLockFailed = false, audioContext = null;
@@ -244,7 +230,7 @@
             toggleBlinkBtn: document.getElementById('toggle-blink-btn'), deitySelector: document.getElementById('deity-selector'),
             blinkSpeedSelector: document.getElementById('blink-speed-selector'), fontSizeSelector: document.getElementById('font-size-selector'),
             bgColorSelector: document.getElementById('bg-color-selector'), languageSelector: document.getElementById('language-selector'),
-            soundToggle: document.getElementById('sound-toggle'), currentCount: document.getElementById('current-count'),
+            soundModeSelector: document.getElementById('sound-mode-selector'), currentCount: document.getElementById('current-count'),
             malaCount: document.getElementById('mala-count'), totalChants: document.getElementById('total-chants'),
             allTimeStatsContainer: document.getElementById('all-time-stats-container'), errorModal: document.getElementById('error-modal'),
             closeErrorModalBtn: document.getElementById('close-error-modal'), chantingView: document.getElementById('chanting-view'),
@@ -277,6 +263,7 @@
             document.querySelectorAll('[data-i18n]').forEach(el => { if (t[el.dataset.i18n]) el.textContent = t[el.dataset.i18n]; });
             DOMElements.toggleBlinkBtn.textContent = t[state.isBlinking ? 'toggleBlinkStop' : 'toggleBlinkStart'];
             DOMElements.bgColorSelector.innerHTML = `<option value="bg-orange-50">${t.optLightOrange}</option><option value="bg-white">${t.optWhite}</option><option value="bg-gray-100">${t.optLightGray}</option><option value="bg-blue-50">${t.optLightBlue}</option>`;
+            DOMElements.soundModeSelector.innerHTML = `<option value="mala_completion">${t.optSoundMala}</option><option value="every_blink">${t.optSoundTick}</option><option value="none">${t.optSoundNone}</option>`;
         }
 
         async function saveState() { if (state.user && db) { try { await setDoc(doc(db, 'users', state.user.uid), { history: state.history, settings: state.settings, currentDeityId: state.currentDeityId }); } catch (e) { console.error("Firebase save failed", e) } } }
@@ -291,7 +278,7 @@
             
             DOMElements.languageSelector.value = state.settings.language; DOMElements.deitySelector.value = state.currentDeityId;
             DOMElements.blinkSpeedSelector.value = state.settings.blinkSpeed; DOMElements.fontSizeSelector.value = state.settings.fontSize;
-            DOMElements.bgColorSelector.value = state.settings.bgColor; DOMElements.soundToggle.checked = state.settings.soundEnabled;
+            DOMElements.bgColorSelector.value = state.settings.bgColor; DOMElements.soundModeSelector.value = state.settings.soundMode;
             document.body.className = `antialiased overflow-hidden ${state.settings.bgColor}`;
 
             const deity = DEITIES.find(d => d.id === state.currentDeityId);
@@ -319,71 +306,40 @@
             const today = new Date().toISOString().split('T')[0];
             const todayTotal = Object.values(state.history[today] || {}).reduce((sum, d) => sum + d.chants + (d.malas * 108), 0);
             
-            // Calculate streak
             let streak = 0;
             const dates = Object.keys(state.history).sort().reverse();
             if (dates.length > 0) {
                 let currentDate = new Date();
                 if (!state.history[currentDate.toISOString().split('T')[0]]) currentDate.setDate(currentDate.getDate() - 1);
-                
-                for(const dateStr of dates) {
-                    if (dateStr === currentDate.toISOString().split('T')[0]) {
-                        streak++;
-                        currentDate.setDate(currentDate.getDate() - 1);
-                    } else {
-                        break;
-                    }
-                }
+                for(const dateStr of dates) { if (dateStr === currentDate.toISOString().split('T')[0]) { streak++; currentDate.setDate(currentDate.getDate() - 1); } else if (new Date(dateStr) < new Date(currentDate.toISOString().split('T')[0])) { break; } }
             }
 
             DOMElements.dbGrandTotal.textContent = grandTotal.toLocaleString();
             DOMElements.dbStreak.textContent = `${streak} ${TRANSLATIONS[state.settings.language].chantingStreak.split(' ')[1]}`;
             DOMElements.dbTodayTotal.textContent = todayTotal.toLocaleString();
             
-            // Render weekly chart
             const chartData = [];
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const dateStr = d.toISOString().split('T')[0];
-                const dayTotal = Object.values(state.history[dateStr] || {}).reduce((sum, rec) => sum + rec.chants + (rec.malas * 108), 0);
-                chartData.push({ label: d.toLocaleDateString(state.settings.language, { weekday: 'short' }), value: dayTotal });
-            }
+            for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const dateStr = d.toISOString().split('T')[0]; const dayTotal = Object.values(state.history[dateStr] || {}).reduce((sum, rec) => sum + rec.chants + (rec.malas * 108), 0); chartData.push({ label: d.toLocaleDateString(state.settings.language, { weekday: 'short' }), value: dayTotal }); }
             const maxVal = Math.max(1, ...chartData.map(d => d.value));
-            DOMElements.weeklyChart.innerHTML = chartData.map(d => `<div class="flex flex-col items-center flex-grow"><div class="w-4/5 h-full flex items-end"><div class="bg-orange-400 w-full" style="height: ${d.value / maxVal * 100}%"></div></div><p class="text-xs mt-1">${d.label}</p></div>`).join('');
+            DOMElements.weeklyChart.innerHTML = chartData.map(d => `<div class="flex flex-col items-center flex-grow"><div class="w-4/5 h-full flex items-end"><div class="bg-orange-400 w-full rounded-t-sm" style="height: ${d.value / maxVal * 100}%"></div></div><p class="text-xs mt-1">${d.label}</p></div>`).join('');
             
-            // Render detailed history
-            DOMElements.detailedHistoryContainer.innerHTML = dates.map(date => {
-                const dateRecords = state.history[date];
-                const recordsHtml = Object.keys(dateRecords).map(deityId => {
-                    const deity = DEITIES.find(d => d.id === deityId);
-                    const record = dateRecords[deityId];
-                    const total = record.chants + (record.malas * 108);
-                    return `<div class="flex items-center justify-between py-1 px-2 hover:bg-gray-50 rounded"><p>${deity['name_' + state.settings.language]}: <span class="font-semibold">${total.toLocaleString()}</span></p><button class="delete-record-btn text-red-400 hover:text-red-600" data-date="${date}" data-deity="${deityId}"><i class="ph ph-trash"></i></button></div>`;
-                }).join('');
-                return `<div class="mb-2"><p class="font-semibold text-gray-700">${new Date(date).toLocaleDateString(state.settings.language, { year: 'numeric', month: 'long', day: 'numeric' })}</p>${recordsHtml}</div>`;
-            }).join('') || `<p class="text-center text-gray-500">${TRANSLATIONS[state.settings.language].noStatsYet}</p>`;
+            DOMElements.detailedHistoryContainer.innerHTML = dates.map(date => { const dateRecords = state.history[date]; const recordsHtml = Object.keys(dateRecords).map(deityId => { const deity = DEITIES.find(d => d.id === deityId); if (!deity) return ''; const record = dateRecords[deityId]; const total = record.chants + (record.malas * 108); return `<div class="flex items-center justify-between py-1 px-2 hover:bg-gray-50 rounded"><p>${deity['name_' + state.settings.language]}: <span class="font-semibold">${total.toLocaleString()}</span></p><button class="delete-record-btn text-red-400 hover:text-red-600" data-date="${date}" data-deity="${deityId}"><i class="ph ph-trash"></i></button></div>`; }).join(''); return `<div class="mb-2"><p class="font-semibold text-gray-700">${new Date(date).toLocaleDateString(state.settings.language, { year: 'numeric', month: 'long', day: 'numeric' })}</p>${recordsHtml}</div>`; }).join('') || `<p class="text-center text-gray-500">${TRANSLATIONS[state.settings.language].noStatsYet}</p>`;
         }
         
         function renderUserInfo() {
-             const lang = state.settings.language;
-             const t = TRANSLATIONS[lang];
-             if (state.user) {
-                DOMElements.userInfoContainer.innerHTML = `<div class="flex items-center mb-2"><img src="${state.user.photoURL}" alt="User" class="w-10 h-10 rounded-full mr-3"><div class="flex-grow"><p class="font-semibold text-gray-800">${state.user.displayName}</p><button id="sign-out-button" class="text-xs text-red-500 hover:underline">${t.signOutBtn}</button></div></div><button id="view-progress-btn" class="w-full bg-orange-500 text-white font-semibold py-2 px-3 rounded-lg hover:bg-orange-600 transition text-sm">${t.viewProgress}</button>`;
-                document.getElementById('sign-out-button').addEventListener('click', handleSignOut);
-                document.getElementById('view-progress-btn').addEventListener('click', () => switchView('dashboard'));
-            } else {
-                DOMElements.userInfoContainer.innerHTML = `<p class="text-xs text-gray-600 mb-2">${t.signInPrompt}</p><button id="sign-in-button" class="w-full bg-blue-500 text-white font-semibold py-2 px-3 rounded-lg hover:bg-blue-600 transition text-sm">${t.signInBtn}</button>`;
-                document.getElementById('sign-in-button').addEventListener('click', handleSignIn);
-            }
+             const lang = state.settings.language; const t = TRANSLATIONS[lang];
+             if (state.user) { DOMElements.userInfoContainer.innerHTML = `<div class="flex items-center mb-2"><img src="${state.user.photoURL}" alt="User" class="w-10 h-10 rounded-full mr-3"><div class="flex-grow"><p class="font-semibold text-gray-800">${state.user.displayName}</p><button id="sign-out-button" class="text-xs text-red-500 hover:underline">${t.signOutBtn}</button></div></div><button id="view-progress-btn" class="w-full bg-orange-500 text-white font-semibold py-2 px-3 rounded-lg hover:bg-orange-600 transition text-sm">${t.viewProgress}</button>`; document.getElementById('sign-out-button').addEventListener('click', handleSignOut); document.getElementById('view-progress-btn').addEventListener('click', () => switchView('dashboard')); } 
+             else { DOMElements.userInfoContainer.innerHTML = `<p class="text-xs text-gray-600 mb-2">${t.signInPrompt}</p><button id="sign-in-button" class="w-full bg-blue-500 text-white font-semibold py-2 px-3 rounded-lg hover:bg-blue-600 transition text-sm">${t.signInBtn}</button>`; document.getElementById('sign-in-button').addEventListener('click', handleSignIn); }
         }
 
-        function playBellSound() { if (!state.settings.soundEnabled) return; try { if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)(); const o = audioContext.createOscillator(), g = audioContext.createGain(); o.connect(g); g.connect(audioContext.destination); o.type = 'sine'; o.frequency.setValueAtTime(1046.50, audioContext.currentTime); g.gain.setValueAtTime(0.5, audioContext.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 1); o.start(audioContext.currentTime); o.stop(audioContext.currentTime + 1); } catch(e) { console.error("Could not play sound", e); state.settings.soundEnabled = false; } }
+        function initAudio() { if (audioContext) return; try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { console.error("Web Audio API not supported."); } }
+        function playTickSound() { if (!audioContext) return; const o = audioContext.createOscillator(), g = audioContext.createGain(); o.connect(g); g.connect(audioContext.destination); o.type = 'sine'; o.frequency.setValueAtTime(220, audioContext.currentTime); g.gain.setValueAtTime(0.1, audioContext.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.1); o.start(audioContext.currentTime); o.stop(audioContext.currentTime + 0.1); }
+        function playBellSound() { if (!audioContext) return; const o = audioContext.createOscillator(), g = audioContext.createGain(); o.connect(g); g.connect(audioContext.destination); o.type = 'sine'; o.frequency.setValueAtTime(1046.50, audioContext.currentTime); g.gain.setValueAtTime(0.5, audioContext.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 1); o.start(audioContext.currentTime); o.stop(audioContext.currentTime + 1); }
 
-        function blink() { const c = DOMElements.deityNameContainer; c.style.visibility = (c.style.visibility === 'hidden') ? 'visible' : 'hidden'; if (c.style.visibility === 'visible') { const t = getTodaysCount(); t.chants++; if (t.chants >= 108) { t.malas++; t.chants = 0; playBellSound(); c.classList.add('mala-glow'); setTimeout(() => c.classList.remove('mala-glow'), 1000); } render(); saveState(); } }
+        function blink() { const c = DOMElements.deityNameContainer; c.style.visibility = (c.style.visibility === 'hidden') ? 'visible' : 'hidden'; if (c.style.visibility === 'visible') { const t = getTodaysCount(); t.chants++; if (state.settings.soundMode === 'every_blink') playTickSound(); if (t.chants >= 108) { t.malas++; t.chants = 0; if (state.settings.soundMode !== 'none') playBellSound(); c.classList.add('mala-glow'); setTimeout(() => c.classList.remove('mala-glow'), 1000); } render(); saveState(); } }
         async function updateBlinking() { clearInterval(blinkInterval); DOMElements.toggleBlinkBtn.textContent = TRANSLATIONS[state.settings.language][state.isBlinking ? 'toggleBlinkStop' : 'toggleBlinkStart']; if (state.isBlinking && document.visibilityState === 'visible') { blinkInterval = setInterval(blink, state.settings.blinkSpeed); if ('wakeLock' in navigator && !wakeLock && !wakeLockFailed) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) { wakeLockFailed = true; console.warn(`Wake Lock failed: ${err.message}`); } } } else { if (wakeLock) { await wakeLock.release(); wakeLock = null; } DOMElements.deityNameContainer.style.visibility = 'visible'; } }
 
-        function handleToggleBlink() { state.isBlinking = !state.isBlinking; updateBlinking(); saveState(); }
+        function handleToggleBlink() { initAudio(); state.isBlinking = !state.isBlinking; updateBlinking(); saveState(); }
         function handleVisibilityChange() { updateBlinking(); }
         
         function createHandler(key, isSetting = false) { return (e) => { const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value; if(isSetting) state.settings[key] = value; else state[key] = value; if (isSetting && key === 'blinkSpeed') updateBlinking(); render(); saveState(); } }
@@ -403,11 +359,7 @@
         async function init() {
             DOMElements.openSidebarBtn.addEventListener('click', () => DOMElements.sidebar.classList.remove('-translate-x-full'));
             DOMElements.closeSidebarBtn.addEventListener('click', () => DOMElements.sidebar.classList.add('-translate-x-full'));
-            DOMElements.chantingView.addEventListener('click', (e) => { 
-                if (window.innerWidth < 768 && !DOMElements.sidebar.contains(e.target) && e.target !== DOMElements.openSidebarBtn) {
-                    DOMElements.sidebar.classList.add('-translate-x-full');
-                }
-            });
+            DOMElements.chantingView.addEventListener('click', (e) => { if (window.innerWidth < 768 && !DOMElements.sidebar.contains(e.target) && !DOMElements.openSidebarBtn.contains(e.target) ) { DOMElements.sidebar.classList.add('-translate-x-full'); } });
             DOMElements.closeErrorModalBtn.addEventListener('click', () => DOMElements.errorModal.classList.add('hidden'));
             DOMElements.backToChantingBtn.addEventListener('click', () => switchView('chanting'));
             
@@ -417,17 +369,35 @@
             DOMElements.fontSizeSelector.addEventListener('change', createHandler('fontSize', true));
             DOMElements.bgColorSelector.addEventListener('change', createHandler('bgColor', true));
             DOMElements.languageSelector.addEventListener('change', createHandler('language', true));
-            DOMElements.soundToggle.addEventListener('change', createHandler('soundEnabled', true));
+            DOMElements.soundModeSelector.addEventListener('change', createHandler('soundMode', true));
             
-            DOMElements.deleteAllHistoryBtn.addEventListener('click', () => showConfirmation('confirmDeleteAllTitle', 'confirmDeleteAllText', () => { state.history = {}; saveState(); renderDashboard(); }));
-            DOMElements.detailedHistoryContainer.addEventListener('click', e => { const btn = e.target.closest('.delete-record-btn'); if(btn) { const {date, deity} = btn.dataset; showConfirmation('confirmDeleteRecordTitle', 'confirmDeleteRecordText', () => { delete state.history[date][deity]; if(Object.keys(state.history[date]).length === 0) delete state.history[date]; saveState(); renderDashboard(); }); } });
+            DOMElements.deleteAllHistoryBtn.addEventListener('click', () => showConfirmation('confirmDeleteAllTitle', 'confirmDeleteAllText', () => { state.history = {}; saveState(); renderDashboard(); render(); }));
+            DOMElements.detailedHistoryContainer.addEventListener('click', e => { const btn = e.target.closest('.delete-record-btn'); if(btn) { const {date, deity} = btn.dataset; showConfirmation('confirmDeleteRecordTitle', 'confirmDeleteRecordText', () => { delete state.history[date][deity]; if(Object.keys(state.history[date]).length === 0) delete state.history[date]; saveState(); renderDashboard(); render(); }); } });
             DOMElements.modalCancelBtn.addEventListener('click', () => DOMElements.confirmationModal.classList.add('hidden'));
             DOMElements.modalConfirmBtn.addEventListener('click', () => { if(confirmationCallback) confirmationCallback(); DOMElements.confirmationModal.classList.add('hidden'); confirmationCallback = null; });
 
             document.addEventListener('visibilitychange', handleVisibilityChange);
 
-            if (auth) { onAuthStateChanged(auth, async (user) => { if (user) { state.user = { uid: user.uid, displayName: user.displayName, photoURL: user.photoURL }; await loadStateFromFirebase(); } else { state = getDefaultState(); } render(); updateBlinking(); }); } 
-            else { render(); updateBlinking(); }
+            if (auth) {
+                onAuthStateChanged(auth, async (user) => {
+                    state.isBlinking = false;
+                    updateBlinking();
+
+                    if (user) {
+                        state.user = { uid: user.uid, displayName: user.displayName, photoURL: user.photoURL };
+                        await loadStateFromFirebase();
+                        state.isBlinking = false; 
+                    } else {
+                        state = getDefaultState(); 
+                    }
+                    
+                    render();
+                    updateBlinking();
+                });
+            } else {
+                render(); 
+                updateBlinking();
+            }
         }
 
         init();
