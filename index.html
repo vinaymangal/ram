@@ -55,25 +55,24 @@
             100% { color: #ef4444; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
         }
         
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #f97316;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+        .om-loader {
+            font-size: 4rem;
+            color: #f97316; /* Orange-500 */
+            animation: pulse 2s infinite ease-in-out;
+            font-weight: normal;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
         }
     </style>
 </head>
 <body class="bg-orange-50 text-gray-800 antialiased overflow-hidden">
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="loader"></div>
+    <div id="loading-overlay" class="fixed inset-0 bg-orange-50/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="om-loader">ॐ</div>
     </div>
 
     <div id="app-container" class="w-full h-[100dvh] flex opacity-0">
@@ -288,7 +287,28 @@
         async function saveState() { if (state.user && db) { try { await setDoc(doc(db, 'users', state.user.uid), { history: state.history, settings: state.settings, currentDeityId: state.currentDeityId }); } catch (e) { console.error("Firebase save failed", e) } } }
         async function loadStateFromFirebase() { if (!state.user || !db) return; try { const docSnap = await getDoc(doc(db, 'users', state.user.uid)); if (docSnap.exists()) { const data = docSnap.data(); state.history = data.history || {}; state.settings = { ...getDefaultState().settings, ...data.settings }; state.currentDeityId = data.currentDeityId || 'ram'; } } catch(e) { console.error("Firebase load failed", e); } }
         function getTodaysCount() { const today = new Date().toISOString().split('T')[0]; if (!state.history[today]) state.history[today] = {}; if (!state.history[today][state.currentDeityId]) state.history[today][state.currentDeityId] = { chants: 0, malas: 0 }; return state.history[today][state.currentDeityId]; }
-        function calculateAllTimeStats() { const stats = {}; DEITIES.forEach(d => { stats[d.id] = { chants: 0, malas: 0 }}); for(const date in state.history) { for(const deityId in state.history[date]) { if(stats[deityId]) { const { chants, malas } = state.history[date][deityId]; stats[deityId].chants += chants; stats[deityId].malas += malas; } } } for(const deityId in stats) { const total = stats[deityId].chants; stats[deityId].malas += Math.floor(total / 108); stats[deityId].chants = total % 108; } return stats; }
+        
+        function calculateAllTimeStats() {
+            const stats = {};
+            DEITIES.forEach(d => { stats[d.id] = { raw_chants: 0 } });
+            
+            for (const date in state.history) {
+                for (const deityId in state.history[date]) {
+                    if (stats[deityId]) {
+                        const { chants, malas } = state.history[date][deityId];
+                        stats[deityId].raw_chants += chants + (malas * 108);
+                    }
+                }
+            }
+            
+            DEITIES.forEach(d => {
+                const total = stats[d.id].raw_chants;
+                stats[d.id].malas = Math.floor(total / 108);
+                stats[d.id].chants = total % 108;
+            });
+
+            return stats;
+        }
 
         function render() {
             translateUI();
@@ -307,13 +327,13 @@
             DOMElements.currentCount.textContent = todaysCount.chants; DOMElements.malaCount.textContent = todaysCount.malas;
             
             const allTimeStats = calculateAllTimeStats();
-            const grandTotal = Object.values(allTimeStats).reduce((sum, d) => sum + d.chants + (d.malas * 108), 0);
+            const grandTotal = Object.values(allTimeStats).reduce((sum, d) => sum + d.raw_chants, 0);
             DOMElements.totalChants.textContent = grandTotal.toLocaleString();
             
             const t = TRANSLATIONS[lang];
             DOMElements.allTimeStatsContainer.innerHTML = DEITIES.map(d => {
                 const stats = allTimeStats[d.id];
-                if ((stats.chants + stats.malas) === 0) return '';
+                if (stats.raw_chants === 0) return '';
                 return `<div class="flex justify-between items-center"><span class="font-medium">${d['name_'+lang]}</span><span class="font-bold text-gray-600">${stats.malas} ${t.malaStat}, ${stats.chants} ${t.chantStat}</span></div>`;
             }).join('') || `<p class="text-xs text-gray-500">${t.noStatsYet}</p>`;
 
@@ -322,7 +342,7 @@
 
         function renderDashboard() {
             const allTimeStats = calculateAllTimeStats();
-            const grandTotal = Object.values(allTimeStats).reduce((sum, d) => sum + d.chants + (d.malas * 108), 0);
+            const grandTotal = Object.values(allTimeStats).reduce((sum, d) => sum + d.raw_chants, 0);
             const today = new Date().toISOString().split('T')[0];
             const todayTotal = Object.values(state.history[today] || {}).reduce((sum, d) => sum + d.chants + (d.malas * 108), 0);
             
@@ -420,7 +440,7 @@
                     setTimeout(() => {
                         DOMElements.loadingOverlay.classList.add('hidden');
                         DOMElements.appContainer.classList.remove('opacity-0');
-                    }, 200);
+                    }, 100);
                 });
             } else {
                 render(); 
