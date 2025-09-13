@@ -71,8 +71,8 @@
 <body class="bg-orange-50 text-gray-800 antialiased overflow-hidden">
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="fixed inset-0 bg-orange-50/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div class="om-loader">ॐ</div>
+    <div id="loading-overlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="loader"></div>
     </div>
 
     <div id="app-container" class="w-full h-[100dvh] flex opacity-0">
@@ -171,29 +171,34 @@
 
             <!-- Dashboard View -->
             <div id="dashboard-view" class="hidden w-full h-full p-4 md:p-8 overflow-y-auto">
-                <button id="back-to-chanting-btn" class="absolute top-4 left-4 z-10 p-2 rounded-full bg-white/70 backdrop-blur-sm"><i class="ph-bold ph-arrow-left text-2xl"></i></button>
-                <h2 class="text-3xl font-bold text-center text-orange-800 mb-6" data-i18n="dashboardTitle">My Progress</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white p-4 rounded-lg shadow text-center"><p class="text-sm font-medium text-gray-500" data-i18n="grandTotal">Grand Total</p><p id="db-grand-total" class="text-3xl font-bold text-orange-600">0</p></div>
-                    <div class="bg-white p-4 rounded-lg shadow text-center"><p class="text-sm font-medium text-gray-500" data-i18n="chantingStreak">Chanting Streak</p><p id="db-streak" class="text-3xl font-bold text-green-600">0 Days</p></div>
-                    <div class="bg-white p-4 rounded-lg shadow text-center"><p class="text-sm font-medium text-gray-500" data-i18n="today">Today</p><p id="db-today-total" class="text-3xl font-bold text-blue-600">0</p></div>
+                <div id="dashboard-loader" class="w-full h-full flex items-center justify-center">
+                    <div class="om-loader">ॐ</div>
                 </div>
+                <div id="dashboard-content" class="hidden">
+                    <button id="back-to-chanting-btn" class="absolute top-4 left-4 z-10 p-2 rounded-full bg-white/70 backdrop-blur-sm"><i class="ph-bold ph-arrow-left text-2xl"></i></button>
+                    <h2 class="text-3xl font-bold text-center text-orange-800 mb-6" data-i18n="dashboardTitle">My Progress</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white p-4 rounded-lg shadow text-center"><p class="text-sm font-medium text-gray-500" data-i18n="grandTotal">Grand Total</p><p id="db-grand-total" class="text-3xl font-bold text-orange-600">0</p></div>
+                        <div class="bg-white p-4 rounded-lg shadow text-center"><p class="text-sm font-medium text-gray-500" data-i18n="chantingStreak">Chanting Streak</p><p id="db-streak" class="text-3xl font-bold text-green-600">0 Days</p></div>
+                        <div class="bg-white p-4 rounded-lg shadow text-center"><p class="text-sm font-medium text-gray-500" data-i18n="today">Today</p><p id="db-today-total" class="text-3xl font-bold text-blue-600">0</p></div>
+                    </div>
 
-                <div class="bg-white p-4 rounded-lg shadow mb-8">
-                    <h3 class="font-semibold mb-4 text-center" data-i18n="weeklyProgress">Last 7 Days Progress</h3>
-                    <div id="weekly-chart" class="flex justify-around items-end h-40 border-b border-gray-200 pb-2"></div>
-                </div>
+                    <div class="bg-white p-4 rounded-lg shadow mb-8">
+                        <h3 class="font-semibold mb-4 text-center" data-i18n="weeklyProgress">Last 7 Days Progress</h3>
+                        <div id="weekly-chart" class="flex justify-around items-end h-40 border-b border-gray-200 pb-2"></div>
+                    </div>
 
-                <div class="bg-white p-4 rounded-lg shadow mb-8">
-                    <h3 class="font-semibold mb-4" data-i18n="detailedHistory">Detailed History</h3>
-                    <div id="detailed-history-container" class="max-h-96 overflow-y-auto"></div>
-                </div>
+                    <div class="bg-white p-4 rounded-lg shadow mb-8">
+                        <h3 class="font-semibold mb-4" data-i18n="detailedHistory">Detailed History</h3>
+                        <div id="detailed-history-container" class="max-h-96 overflow-y-auto"></div>
+                    </div>
 
-                <div class="bg-red-50 border border-red-200 p-4 rounded-lg shadow">
-                    <h3 class="font-semibold text-red-800" data-i18n="dangerZone">Danger Zone</h3>
-                    <p class="text-sm text-red-600 my-2" data-i18n="deleteWarning">This action cannot be undone.</p>
-                    <button id="delete-all-history-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition text-sm" data-i18n="deleteAllHistory">Delete All History</button>
+                    <div class="bg-red-50 border border-red-200 p-4 rounded-lg shadow">
+                        <h3 class="font-semibold text-red-800" data-i18n="dangerZone">Danger Zone</h3>
+                        <p class="text-sm text-red-600 my-2" data-i18n="deleteWarning">This action cannot be undone.</p>
+                        <button id="delete-all-history-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition text-sm" data-i18n="deleteAllHistory">Delete All History</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -252,7 +257,8 @@
             malaCount: document.getElementById('mala-count'), totalChants: document.getElementById('total-chants'),
             allTimeStatsContainer: document.getElementById('all-time-stats-container'), errorModal: document.getElementById('error-modal'),
             closeErrorModalBtn: document.getElementById('close-error-modal'), chantingView: document.getElementById('chanting-view'),
-            dashboardView: document.getElementById('dashboard-view'), backToChantingBtn: document.getElementById('back-to-chanting-btn'),
+            dashboardView: document.getElementById('dashboard-view'), dashboardLoader: document.getElementById('dashboard-loader'),
+            dashboardContent: document.getElementById('dashboard-content'), backToChantingBtn: document.getElementById('back-to-chanting-btn'),
             dbGrandTotal: document.getElementById('db-grand-total'), dbStreak: document.getElementById('db-streak'),
             dbTodayTotal: document.getElementById('db-today-total'), weeklyChart: document.getElementById('weekly-chart'),
             detailedHistoryContainer: document.getElementById('detailed-history-container'), deleteAllHistoryBtn: document.getElementById('delete-all-history-btn'),
@@ -265,13 +271,25 @@
         try { app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); } 
         catch (error) { console.error("Firebase not configured. App in offline mode.", error); }
         
-        function switchView(view) {
+        async function switchView(view) {
             state.currentView = view;
-            DOMElements.chantingView.classList.toggle('hidden', view !== 'chanting');
-            DOMElements.sidebar.classList.toggle('hidden', view !== 'chanting');
-            DOMElements.sidebar.classList.toggle('flex', view === 'chanting');
-            DOMElements.dashboardView.classList.toggle('hidden', view !== 'dashboard');
-            if (view === 'dashboard') renderDashboard();
+            if (view === 'dashboard') {
+                DOMElements.chantingView.classList.add('hidden');
+                DOMElements.sidebar.classList.add('hidden');
+                DOMElements.dashboardView.classList.remove('hidden');
+                DOMElements.dashboardLoader.classList.remove('hidden');
+                DOMElements.dashboardContent.classList.add('hidden');
+                // Simulate data fetching for dashboard
+                await new Promise(res => setTimeout(res, 50));
+                renderDashboard();
+                DOMElements.dashboardLoader.classList.add('hidden');
+                DOMElements.dashboardContent.classList.remove('hidden');
+            } else {
+                DOMElements.chantingView.classList.remove('hidden');
+                DOMElements.sidebar.classList.remove('hidden');
+                DOMElements.sidebar.classList.add('flex');
+                DOMElements.dashboardView.classList.add('hidden');
+            }
         }
 
         function translateUI() {
@@ -440,7 +458,7 @@
                     setTimeout(() => {
                         DOMElements.loadingOverlay.classList.add('hidden');
                         DOMElements.appContainer.classList.remove('opacity-0');
-                    }, 100);
+                    }, 200);
                 });
             } else {
                 render(); 
@@ -449,7 +467,7 @@
             }
         }
 
-        init();
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
