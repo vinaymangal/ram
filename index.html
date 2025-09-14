@@ -40,6 +40,10 @@
             color: #ef4444; /* Red-500 */
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
             transition: font-size 0.3s ease, text-shadow 0.3s ease, color 0.3s ease;
+            /* **FONT OVERFLOW FIX** */
+            max-width: 95vw;
+            text-align: center;
+            line-height: 1.1;
         }
 
         #sidebar {
@@ -103,7 +107,6 @@
                             <div>
                                 <label for="blink-speed-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="blinkSpeed">Blink Speed</label>
                                 <select id="blink-speed-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md">
-                                    <option value="1000">1.0s</option><option value="900">0.9s</option><option value="800">0.8s</option><option value="700">0.7s</option><option value="600">0.6s</option><option value="500">0.5s</option><option value="400" selected>0.4s</option><option value="300">0.3s</option><option value="200">0.2s</option>
                                 </select>
                             </div>
                         </div>
@@ -116,7 +119,10 @@
                              <div>
                                 <label for="font-size-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="fontSize">Font Size</label>
                                 <select id="font-size-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md">
-                                    <option value="30vmin" data-i18n="optSmall">Small</option><option value="40vmin" selected data-i18n="optMedium">Medium</option><option value="50vmin" data-i18n="optLarge">Large</option><option value="60vmin" data-i18n="optXLarge">Extra Large</option>
+                                    <option value="small" data-i18n="optSmall">Small</option>
+                                    <option value="medium" selected data-i18n="optMedium">Medium</option>
+                                    <option value="large" data-i18n="optLarge">Large</option>
+                                    <option value="xlarge" data-i18n="optXLarge">Extra Large</option>
                                 </select>
                             </div>
                             <div>
@@ -166,7 +172,10 @@
 
             <!-- Dashboard View -->
             <div id="dashboard-view" class="hidden w-full h-full p-4 md:p-8 overflow-y-auto">
-                <div>
+                <div id="dashboard-loader" class="w-full h-full flex items-center justify-center">
+                    <div class="om-loader">ॐ</div>
+                </div>
+                <div id="dashboard-content" class="hidden">
                     <button id="back-to-chanting-btn" class="absolute top-4 left-4 z-10 p-2 rounded-full bg-white/70 backdrop-blur-sm"><i class="ph-bold ph-arrow-left text-2xl"></i></button>
                     <h2 class="text-3xl font-bold text-center text-orange-800 mb-6" data-i18n="dashboardTitle">My Progress</h2>
                     
@@ -219,9 +228,10 @@
 
         const DEITIES = [
             { id: 'ram', name_hi: 'श्री राम', name_en: 'Shri Ram', mantra_hi: 'राम', mantra_en: 'Ram' },
-            { id: 'krishna', name_hi: 'श्री कृष्ण', name_en: 'Shri Krishna', mantra_hi: 'कृष्ण', mantra_en: 'Krishna' },
-            { id: 'shiva', name_hi: 'भगवान शिव', name_en: 'Lord Shiva', mantra_hi: 'शिव', mantra_en: 'Shiva' },
-            { id: 'hanuman', name_hi: 'हनुमान', name_en: 'Hanuman', mantra_hi: 'हनुमान', mantra_en: 'Hanuman' },
+            { id: 'krishna', name_hi: 'श्री कृष्ण', name_en: 'Shri Krishna', mantra_hi: 'हरे कृष्ण', mantra_en: 'Hare Krishna' },
+            { id: 'shiva', name_hi: 'भगवान शिव', name_en: 'Lord Shiva', mantra_hi: 'हरी ॐ', mantra_en: 'Hari Om' },
+            { id: 'hanuman', name_hi: 'हनुमान जी', name_en: 'Hanuman Ji', mantra_hi: 'जय हनुमान', mantra_en: 'Jai Hanuman' },
+            { id: 'radha', name_hi: 'राधा जी', name_en: 'Radha Ji', mantra_hi: 'राधा', mantra_en: 'Radha' },
         ];
         
         const TRANSLATIONS = {
@@ -231,7 +241,7 @@
 
         const firebaseConfig = { apiKey: "AIzaSyDX4Bm3HBOMTZ2E9f_pPUKykzANumG6Bpg", authDomain: "ramnaam1.firebaseapp.com", projectId: "ramnaam1", storageBucket: "ramnaam1.firebasestorage.app", messagingSenderId: "399389434845", appId: "1:399389434845:web:bf67b08826207481054c34" };
         
-        const getDefaultState = () => ({ user: null, isBlinking: false, currentDeityId: 'ram', history: {}, settings: { language: 'hi', blinkSpeed: 400, fontSize: '40vmin', bgColor: 'bg-orange-50', soundMode: 'mala_completion' }, currentView: 'chanting' });
+        const getDefaultState = () => ({ user: null, isBlinking: false, currentDeityId: 'ram', history: {}, settings: { language: 'hi', blinkSpeed: 400, fontSizePref: 'medium', bgColor: 'bg-orange-50', soundMode: 'mala_completion' }, currentView: 'chanting' });
 
         let state = getDefaultState();
         let blinkInterval, wakeLock = null, wakeLockFailed = false, audioContext = null;
@@ -262,6 +272,25 @@
         try { app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); } 
         catch (error) { console.error("Firebase not configured. App in offline mode.", error); }
         
+        // --- SMART MANTRA ENGINE ---
+        const smartMantraEngine = {
+            getFontSize(mantra, preference) {
+                const baseSize = 55; // Base font size in vmin, slightly reduced for better wrapping
+                const factor = Math.log(mantra.length + 1.5); // Adjusted log for smoother scaling
+                const dynamicSize = baseSize / (factor > 1 ? factor : 1);
+                
+                const multipliers = { small: 0.8, medium: 1.0, large: 1.2, xlarge: 1.4 };
+                return (dynamicSize * multipliers[preference]) + 'vmin';
+            },
+            getBlinkSpeeds(mantra) {
+                const baseSpeeds = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500];
+                const lengthFactor = 40; // ms to add per character, reduced for faster speeds
+                const minSpeed = 200 + (mantra.length * lengthFactor);
+                
+                return baseSpeeds.filter(speed => speed >= minSpeed);
+            }
+        };
+
         async function switchView(view) {
             state.currentView = view;
             if (view === 'dashboard') {
@@ -316,15 +345,26 @@
         function render() {
             translateUI();
             const lang = state.settings.language;
+            const currentDeity = DEITIES.find(d => d.id === state.currentDeityId);
+            const currentMantra = currentDeity['mantra_' + lang];
+
             DOMElements.deitySelector.innerHTML = DEITIES.map(d => `<option value="${d.id}">${d['name_'+lang]}</option>`).join('');
             
+            // Smart Engine updates
+            const availableSpeeds = smartMantraEngine.getBlinkSpeeds(currentMantra);
+            DOMElements.blinkSpeedSelector.innerHTML = availableSpeeds.map(s => `<option value="${s}">${(s/1000).toFixed(1)}s</option>`).join('');
+            
+            if (!availableSpeeds.includes(state.settings.blinkSpeed)) {
+                state.settings.blinkSpeed = availableSpeeds[1] || availableSpeeds[0]; // Default to 0.4s or second fastest
+            }
+            
             DOMElements.languageSelector.value = state.settings.language; DOMElements.deitySelector.value = state.currentDeityId;
-            DOMElements.blinkSpeedSelector.value = state.settings.blinkSpeed; DOMElements.fontSizeSelector.value = state.settings.fontSize;
+            DOMElements.blinkSpeedSelector.value = state.settings.blinkSpeed; DOMElements.fontSizeSelector.value = state.settings.fontSizePref;
             DOMElements.bgColorSelector.value = state.settings.bgColor; DOMElements.soundModeSelector.value = state.settings.soundMode;
             document.body.className = `antialiased overflow-hidden ${state.settings.bgColor}`;
 
-            const deity = DEITIES.find(d => d.id === state.currentDeityId);
-            DOMElements.deityNameContainer.textContent = deity['mantra_' + lang]; DOMElements.deityNameContainer.style.fontSize = state.settings.fontSize;
+            DOMElements.deityNameContainer.textContent = currentMantra;
+            DOMElements.deityNameContainer.style.fontSize = smartMantraEngine.getFontSize(currentMantra, state.settings.fontSizePref);
             
             const todaysCount = getTodaysCount();
             DOMElements.currentCount.textContent = todaysCount.chants; DOMElements.malaCount.textContent = todaysCount.malas;
@@ -392,7 +432,18 @@
         function handleToggleBlink() { initAudio(); state.isBlinking = !state.isBlinking; updateBlinking(); saveState(); }
         function handleVisibilityChange() { updateBlinking(); }
         
-        function createHandler(key, isSetting = false) { return (e) => { const value = e.target.value; if(isSetting) state.settings[key] = value; else state[key] = value; if (isSetting && key === 'blinkSpeed') updateBlinking(); render(); saveState(); } }
+        function createHandler(key, isSetting = false) { 
+            return (e) => { 
+                const value = e.target.value; 
+                if(isSetting) state.settings[key] = value; else state[key] = value; 
+                if (key === 'blinkSpeed') state.settings.blinkSpeed = parseInt(value);
+                if (key === 'fontSizePref') state.settings.fontSizePref = value;
+                render(); 
+                if (state.isBlinking) updateBlinking();
+                saveState(); 
+            } 
+        }
+
         async function handleSignIn() { if (!auth) return; try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (error) { if (error.code === 'auth/unauthorized-domain') DOMElements.errorModal.classList.remove('hidden'); else console.error('Auth error:', error); } }
         async function handleSignOut() { if (!auth) return; await saveState(); await signOut(auth); }
         async function handleViewProgress() {
@@ -404,7 +455,7 @@
             spinner.classList.remove('hidden');
             text.textContent = TRANSLATIONS[state.settings.language].loading;
 
-            await new Promise(res => setTimeout(res, 200)); // Simulate fetch time
+            await new Promise(res => setTimeout(res, 200));
             
             playTickSound();
             switchView('dashboard');
@@ -434,7 +485,7 @@
             DOMElements.toggleBlinkBtn.addEventListener('click', handleToggleBlink);
             DOMElements.deitySelector.addEventListener('change', createHandler('currentDeityId'));
             DOMElements.blinkSpeedSelector.addEventListener('change', createHandler('blinkSpeed', true));
-            DOMElements.fontSizeSelector.addEventListener('change', createHandler('fontSize', true));
+            DOMElements.fontSizeSelector.addEventListener('change', createHandler('fontSizePref', true));
             DOMElements.bgColorSelector.addEventListener('change', createHandler('bgColor', true));
             DOMElements.languageSelector.addEventListener('change', createHandler('language', true));
             DOMElements.soundModeSelector.addEventListener('change', createHandler('soundMode', true));
