@@ -37,13 +37,11 @@
             width: 100%;
             height: 100%;
             font-weight: bold;
-            color: #ef4444; /* Red-500 */
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
             transition: font-size 0.3s ease, text-shadow 0.3s ease, color 0.3s ease;
-            /* **FONT OVERFLOW FIX** */
             max-width: 95vw;
             text-align: center;
-            line-height: 1.1;
+            line-height: 1.2;
         }
 
         #sidebar {
@@ -54,21 +52,13 @@
             animation: glow-animation 1s ease-out;
         }
         @keyframes glow-animation {
-            0% { color: #ef4444; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
-            50% { color: #f59e0b; text-shadow: 0 0 25px #f59e0b, 0 0 10px #fde68a; }
-            100% { color: #ef4444; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+            0% { text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+            50% { text-shadow: 0 0 25px currentColor, 0 0 10px #fde68a; }
+            100% { text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
         }
         
-        .om-loader {
-            font-size: 4rem;
-            color: #f97316; /* Orange-500 */
-            animation: pulse 2s infinite ease-in-out;
-            font-weight: normal;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 1; }
-            100% { transform: scale(1); opacity: 0.7; }
+        .karaoke-word {
+            transition: color 0.2s ease-in-out;
         }
     </style>
 </head>
@@ -99,15 +89,19 @@
                     <div>
                         <h3 class="font-semibold text-gray-700 mb-2" data-i18n="chantingControls">Chanting Controls</h3>
                         <div class="bg-gray-100 p-3 rounded-lg space-y-3">
-                            <button id="toggle-blink-btn" class="w-full bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition"></button>
+                            <button id="toggle-chanting-btn" class="w-full bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition"></button>
                             <div>
-                                <label for="deity-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="selectDeity">Deity</label>
+                                <label for="deity-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="selectDeity">Mantra</label>
                                 <select id="deity-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md"></select>
                             </div>
                             <div>
-                                <label for="blink-speed-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="blinkSpeed">Blink Speed</label>
-                                <select id="blink-speed-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md">
-                                </select>
+                                <label id="speed-label" for="blink-speed-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="blinkSpeed">Blink Speed</label>
+                                <div class="flex items-center space-x-2">
+                                    <button id="speed-down-btn" class="px-3 py-1 bg-gray-200 rounded-md hover:bg-gray-300">-</button>
+                                    <select id="blink-speed-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md">
+                                    </select>
+                                    <button id="speed-up-btn" class="px-3 py-1 bg-gray-200 rounded-md hover:bg-gray-300">+</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -126,8 +120,8 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="bg-color-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="backgroundColor">Background Color</label>
-                                <select id="bg-color-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md"></select>
+                                <label for="theme-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="theme">Theme</label>
+                                <select id="theme-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md"></select>
                             </div>
                              <div>
                                 <label for="language-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="language">Language</label>
@@ -138,6 +132,9 @@
                             <div>
                                 <label for="sound-mode-selector" class="block text-sm font-medium text-gray-600 mb-1" data-i18n="soundMode">Sound Mode</label>
                                 <select id="sound-mode-selector" class="w-full p-2 bg-white border border-gray-300 rounded-md"></select>
+                            </div>
+                             <div>
+                                <button id="fullscreen-btn" class="w-full text-sm font-medium text-gray-600 mt-2 py-2 px-4 bg-white border border-gray-300 rounded-md hover:bg-gray-100 transition" data-i18n="fullscreen">Full Screen</button>
                             </div>
                         </div>
                     </div>
@@ -166,16 +163,16 @@
             <!-- Chanting View -->
             <main id="chanting-view" class="w-full h-full flex flex-col items-center justify-center">
                 <button id="open-sidebar-btn" class="absolute top-4 left-4 z-10 p-2 rounded-full bg-white/70 backdrop-blur-sm md:hidden"><i class="ph-bold ph-list text-2xl"></i></button>
-                <div class="text-center absolute top-4"><h1 class="text-xl font-bold text-gray-600" data-i18n="mainTitle">राम नाम खाता</h1><p class="text-sm text-gray-500" data-i18n="mainSubtitle">राम नाम बैंक में खाता खोलो, जप का खाता चालु</p></div>
-                <div id="deity-name-container">राम</div>
+                <div class="text-center absolute top-4 px-4">
+                    <h1 id="main-title" class="text-xl font-semibold text-gray-500"></h1>
+                    <p id="main-subtitle" class="text-sm text-gray-400"></p>
+                </div>
+                <div id="deity-name-container"></div>
             </main>
 
             <!-- Dashboard View -->
             <div id="dashboard-view" class="hidden w-full h-full p-4 md:p-8 overflow-y-auto">
-                <div id="dashboard-loader" class="w-full h-full flex items-center justify-center">
-                    <div class="om-loader">ॐ</div>
-                </div>
-                <div id="dashboard-content" class="hidden">
+                <div>
                     <button id="back-to-chanting-btn" class="absolute top-4 left-4 z-10 p-2 rounded-full bg-white/70 backdrop-blur-sm"><i class="ph-bold ph-arrow-left text-2xl"></i></button>
                     <h2 class="text-3xl font-bold text-center text-orange-800 mb-6" data-i18n="dashboardTitle">My Progress</h2>
                     
@@ -227,35 +224,72 @@
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const DEITIES = [
-            { id: 'ram', name_hi: 'श्री राम', name_en: 'Shri Ram', mantra_hi: 'राम', mantra_en: 'Ram' },
-            { id: 'krishna', name_hi: 'श्री कृष्ण', name_en: 'Shri Krishna', mantra_hi: 'हरे कृष्ण', mantra_en: 'Hare Krishna' },
-            { id: 'shiva', name_hi: 'भगवान शिव', name_en: 'Lord Shiva', mantra_hi: 'हरी ॐ', mantra_en: 'Hari Om' },
-            { id: 'hanuman', name_hi: 'हनुमान जी', name_en: 'Hanuman Ji', mantra_hi: 'जय हनुमान', mantra_en: 'Jai Hanuman' },
-            { id: 'radha', name_hi: 'राधा जी', name_en: 'Radha Ji', mantra_hi: 'राधा', mantra_en: 'Radha' },
+            // Original Mantras
+            { id: 'original_ram', type: 'blinkable', name_hi: 'श्री राम', name_en: 'Shri Ram', mantra_hi: 'राम', mantra_en: 'Ram', title_hi: 'राम नाम जाप', title_en: 'Ram Naam Jaap', subtitle_hi: 'मंत्र देखें और मन में जाप करें', subtitle_en: 'Observe the mantra and chant in your mind' },
+            { id: 'original_krishna', type: 'blinkable', name_hi: 'श्री कृष्ण', name_en: 'Shri Krishna', mantra_hi: 'हरे कृष्ण', mantra_en: 'Hare Krishna', title_hi: 'कृष्ण जाप', title_en: 'Krishna Jaap', subtitle_hi: 'प्रेम से \'हरे कृष्ण\' का जाप करें', subtitle_en: 'Chant \'Hare Krishna\' with love' },
+            { id: 'original_shiva', type: 'blinkable', name_hi: 'भगवान शिव (सरल)', name_en: 'Lord Shiva (Simple)', mantra_hi: 'हरी ॐ', mantra_en: 'Hari Om', title_hi: 'शिव जाप', title_en: 'Shiva Jaap', subtitle_hi: 'शिव का ध्यान करें', subtitle_en: 'Meditate on Lord Shiva' },
+            { id: 'original_hanuman', type: 'blinkable', name_hi: 'हनुमान जी (सरल)', name_en: 'Hanuman Ji (Simple)', mantra_hi: 'जय हनुमान', mantra_en: 'Jai Hanuman', title_hi: 'हनुमान जाप', title_en: 'Hanuman Jaap', subtitle_hi: 'संकटमोचन का जाप करें', subtitle_en: 'Chant to the remover of obstacles' },
+            { id: 'original_radha', type: 'blinkable', name_hi: 'राधा जी', name_en: 'Radha Ji', mantra_hi: 'राधा', mantra_en: 'Radha', title_hi: 'राधा नाम जाप', title_en: 'Radha Naam Jaap', subtitle_hi: 'राधा नाम का अमृत जपें', subtitle_en: 'Chant the nectar of Radha\'s name' },
+            // Expanded Mantras
+            { id: 'sarvochcha_vastavikta', type: 'blinkable', name_hi: 'सर्वोच्च वास्तविकता', name_en: 'Supreme Reality', mantra_hi: 'ॐ', mantra_en: 'Om', title_hi: 'ब्रह्म जाप', title_en: 'Brahman Jaap', subtitle_hi: 'ब्रह्मांड की ध्वनि का जाप करें', subtitle_en: 'Chant the sound of the universe' },
+            { id: 'gayatri_mantra', type: 'readable', name_hi: 'गायत्री मंत्र', name_en: 'Gayatri Mantra', mantra_hi: 'ॐ भूर्भुवः स्वः<br>तत्सवितुर्वरेण्यं<br>भर्गो देवस्य धीमहि<br>धियो यो नः प्रचोदयात्', mantra_en: 'Om Bhur Bhuvah Svah<br>Tat Savitur Varenyam<br>Bhargo Devasya Dhimahi<br>Dhiyo Yo Nah Prachodayat', title_hi: 'गायत्री जाप', title_en: 'Gayatri Jaap', subtitle_hi: 'दिव्य प्रकाश का ध्यान करें', subtitle_en: 'Meditate on the divine light' },
+            { id: 'shiva', type: 'blinkable', name_hi: 'भगवान शिव', name_en: 'Lord Shiva', mantra_hi: 'ॐ नमः शिवाय', mantra_en: 'Om Namah Shivaya', title_hi: 'शिव पंचाक्षर जाप', title_en: 'Shiva Panchakshara Jaap', subtitle_hi: 'पंचाक्षर मंत्र का जाप करें', subtitle_en: 'Chant the five-syllable mantra' },
+            { id: 'maha_mrityunjaya', type: 'readable', name_hi: 'महा मृत्युंजय मंत्र', name_en: 'Maha Mrityunjaya Mantra', mantra_hi: 'ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम् ।<br>उर्वारुकमिव बन्धनान् मृत्योर्मुक्षीय माऽमृतात् ॥', mantra_en: 'Om Tryambakam Yajamahe Sugandhim Pushtivardhanam,<br>Urvarukamiva Bandhanan Mrityor Mukshiya Maamritat', title_hi: 'महा मृत्युंजय जाप', title_en: 'Maha Mrityunjaya Jaap', subtitle_hi: 'आरोग्य और मोक्ष के लिए जाप करें', subtitle_en: 'Chant for healing and liberation' },
+            { id: 'hare_krishna', type: 'readable', name_hi: 'हरे कृष्ण (महा-मंत्र)', name_en: 'Hare Krishna (Maha-mantra)', mantra_hi: 'हरे कृष्ण हरे कृष्ण<br>कृष्ण कृष्ण हरे हरे<br>हरे राम हरे राम<br>राम राम हरे हरे', mantra_en: 'Hare Krishna Hare Krishna<br>Krishna Krishna Hare Hare<br>Hare Rama Hare Rama<br>Rama Rama Hare Hare', title_hi: 'महा-मंत्र जाप', title_en: 'Maha-Mantra Jaap', subtitle_hi: 'प्रेम से महा-मंत्र का जाप करें', subtitle_en: 'Chant the great mantra with love' },
+            { id: 'vishnu', type: 'blinkable', name_hi: 'भगवान विष्णु', name_en: 'Lord Vishnu', mantra_hi: 'ॐ नमो भगवते वासुदेवाय', mantra_en: 'Om Namo Bhagavate Vasudevaya', title_hi: 'विष्णु जाप', title_en: 'Vishnu Jaap', subtitle_hi: 'संरक्षक का आह्वान करें', subtitle_en: 'Invoke the preserver' },
+            { id: 'ram', type: 'blinkable', name_hi: 'श्री राम (पूर्ण)', name_en: 'Shri Ram (Full)', mantra_hi: 'श्री राम जय राम जय जय राम', mantra_en: 'Shri Ram Jai Ram Jai Jai Ram', title_hi: 'राम तारक मंत्र', title_en: 'Ram Taarak Mantra', subtitle_hi: 'तारक मंत्र का जाप करें', subtitle_en: 'Chant the liberating mantra' },
+            { id: 'ganesh', type: 'blinkable', name_hi: 'भगवान गणेश', name_en: 'Lord Ganesh', mantra_hi: 'ॐ गं गणपतये नमः', mantra_en: 'Om Gan Ganapataye Namah', title_hi: 'गणेश जाप', title_en: 'Ganesh Jaap', subtitle_hi: 'बाधाओं को दूर करने के लिए जाप करें', subtitle_en: 'Chant to remove obstacles' },
+            { id: 'lakshmi', type: 'blinkable', name_hi: 'देवी लक्ष्मी', name_en: 'Devi Lakshmi', mantra_hi: 'ॐ श्री महालक्ष्म्यै नमः', mantra_en: 'Om Shri Mahalakshmyai Namah', title_hi: 'लक्ष्मी जाप', title_en: 'Lakshmi Jaap', subtitle_hi: 'समृद्धि के लिए जाप करें', subtitle_en: 'Chant for prosperity' },
+            { id: 'durga', type: 'blinkable', name_hi: 'देवी दुर्गा', name_en: 'Devi Durga', mantra_hi: 'ॐ दुं दुर्गायै नमः', mantra_en: 'Om Dum Durgayei Namah', title_hi: 'दुर्गा जाप', title_en: 'Durga Jaap', subtitle_hi: 'शक्ति और सुरक्षा के लिए जाप करें', subtitle_en: 'Chant for strength and protection' },
+            { id: 'hanuman', type: 'blinkable', name_hi: 'हनुमान जी', name_en: 'Hanuman Ji', mantra_hi: 'ॐ हनुमते नमः', mantra_en: 'Om Hanumate Namah', title_hi: 'हनुमान जाप', title_en: 'Hanuman Jaap', subtitle_hi: 'भक्ति और शक्ति के लिए जाप करें', subtitle_en: 'Chant for devotion and strength' },
+            { id: 'saraswati', type: 'blinkable', name_hi: 'देवी सरस्वती', name_en: 'Devi Saraswati', mantra_hi: 'ॐ ऐं सरस्वत्यै नमः', mantra_en: 'Om Aim Sarasvatyai Namah', title_hi: 'सरस्वती जाप', title_en: 'Saraswati Jaap', subtitle_hi: 'ज्ञान और विद्या के लिए जाप करें', subtitle_en: 'Chant for knowledge and wisdom' },
+            { id: 'surya', type: 'blinkable', name_hi: 'सूर्य देव', name_en: 'Surya Dev', mantra_hi: 'ॐ सूर्याय नमः', mantra_en: 'Om Suryaya Namah', title_hi: 'सूर्य जाप', title_en: 'Surya Jaap', subtitle_hi: 'ऊर्जा और जीवन शक्ति के लिए जाप करें', subtitle_en: 'Chant for energy and vitality' },
+            { id: 'shanti', type: 'readable', name_hi: 'सार्वभौमिक शांति', name_en: 'Universal Peace', mantra_hi: 'ॐ सर्वेशां स्वस्तिर्भवतु ।<br>सर्वेशां शान्तिर्भवतु ।<br>सर्वेशां पुर्णंभवतु ।<br>सर्वेशां मङ्गलंभवतु ।', mantra_en: 'Om Sarvesham Svastir Bhavatu<br>Sarvesham Shantir Bhavatu<br>Sarvesham Purnam Bhavatu<br>Sarvesham Mangalam Bhavatu', title_hi: 'शांति पाठ', title_en: 'Shanti Paath', subtitle_hi: 'सभी के लिए शांति का जाप करें', subtitle_en: 'Chant for the well-being of all' },
+        ];
+
+        const THEMES = [
+            // Original Themes
+            { id: 'saffron_bliss', name_hi: 'केसरिया आनंद', name_en: 'Saffron Bliss', bg: 'bg-orange-50', mantra: 'text-red-500', highlight: 'text-orange-500' },
+            { id: 'lotus_radiance', name_hi: 'कमल प्रकाश', name_en: 'Lotus Radiance', bg: 'bg-pink-50', mantra: 'text-pink-600', highlight: 'text-rose-500' },
+            { id: 'peacock_grace', name_hi: 'मनमोहक मोर छवी', name_en: 'Peacock Grace', bg: 'bg-teal-50', mantra: 'text-teal-700', highlight: 'text-cyan-500' },
+            // 5 Elements
+            { id: 'agni', name_hi: 'अग्नि', name_en: 'Agni (Fire)', bg: 'bg-red-50', mantra: 'text-amber-700', highlight: 'text-red-600' },
+            { id: 'jal', name_hi: 'जल', name_en: 'Jal (Water)', bg: 'bg-blue-50', mantra: 'text-blue-700', highlight: 'text-sky-400' },
+            { id: 'vayu', name_hi: 'वायु', name_en: 'Vayu (Air)', bg: 'bg-slate-100', mantra: 'text-slate-600', highlight: 'text-slate-900' },
+            { id: 'prithvi', name_hi: 'पृथ्वी', name_en: 'Prithvi (Earth)', bg: 'bg-emerald-50', mantra: 'text-emerald-800', highlight: 'text-green-600' },
+            { id: 'akash', name_hi: 'आकाश', name_en: 'Akash (Ether)', bg: 'bg-indigo-950', mantra: 'text-indigo-200', highlight: 'text-white' },
         ];
         
         const TRANSLATIONS = {
-            'hi': {'controlsTitle':'नियंत्रण','account':'अकाउंट','chantingControls':'जाप नियंत्रण','toggleBlinkStart':'जाप शुरू करें','toggleBlinkStop':'जाप रोकें','selectDeity':'देवता','blinkSpeed':'जाप गति','appearance':'दिखावट','fontSize':'अक्षर का आकार','optSmall':'छोटा','optMedium':'मध्यम','optLarge':'बड़ा','optXLarge':'अतिरिक्त बड़ा','backgroundColor':'बैकग्राउंड का रंग','optLightOrange':'हल्का नारंगी','optWhite':'सफ़ेद','optLightGray':'हल्का ग्रे','optLightBlue':'हल्का नीला','language':'भाषा','chantLabel':'जाप','malaLabel':'माला','totalChants':'कुल जाप','signInPrompt':'अपनी प्रगति सिंक करने के लिए साइन इन करें।','signInBtn':'Google से साइन इन करें','signOutBtn':'साइन आउट','mainTitle':'राम नाम खाता','mainSubtitle':'राम नाम बैंक में खाता खोलो, जप का खाता चालु','allTimeStats':'कुल आँकड़े','todaysStats':'आज के आँकड़े','dashboardTitle':'मेरी प्रगति','grandTotal':'कुल योग','chantingStreak':'जाप की लड़ी','today':'आज','weeklyProgress':'अंतिम 7 दिन की प्रगति','detailedHistory':'विस्तृत इतिहास','dangerZone':'खतरनाक क्षेत्र','deleteWarning':'यह क्रिया पूर्ववत नहीं की जा सकती।','deleteAllHistory':'सारा इतिहास मिटाएं','viewProgress':'प्रगति देखें','confirmDeleteAllTitle':'क्या आप निश्चित हैं?','confirmDeleteAllText':'आपका सारा जाप इतिहास स्थायी रूप से हटा दिया जाएगा।','confirmDeleteRecordTitle':'रिकॉर्ड हटाएं?','confirmDeleteRecordText':'यह रिकॉर्ड स्थायी रूप से हटा दिया जाएगा।','cancel':'रद्द करें','delete':'मिटाएं', 'noStatsYet': 'अभी तक कोई आँकड़े नहीं हैं।', 'soundMode':'ध्वनि मोड', 'optSoundNone':'कोई ध्वनि नहीं', 'optSoundTick':'हर जाप पर', 'optSoundMala':'माला पूरी होने पर', 'malaStat': 'माला', 'chantStat': 'जाप', 'loading': 'लोड हो रहा है...'},
-            'en': {'controlsTitle':'Controls','account':'Account','chantingControls':'Chanting Controls','toggleBlinkStart':'Start Chanting','toggleBlinkStop':'Stop Chanting','selectDeity':'Deity','blinkSpeed':'Blink Speed','appearance':'Appearance','fontSize':'Font Size','optSmall':'Small','optMedium':'Medium','optLarge':'Large','optXLarge':'Extra Large','backgroundColor':'Background Color','optLightOrange':'Light Orange','optWhite':'White','optLightGray':'Light Gray','optLightBlue':'Light Blue','language':'Language','chantLabel':'Chant','malaLabel':'Mala','totalChants':'Grand Total Chants','signInPrompt':'Sign in to sync your progress.','signInBtn':'Sign in with Google','signOutBtn':'Sign Out','mainTitle':'Ram Naam Khata','mainSubtitle':'Open an account in the Ram Naam bank, start your chanting account','allTimeStats':'All-Time Stats','todaysStats':'Today\'s Stats','dashboardTitle':'My Progress','grandTotal':'Grand Total','chantingStreak':'Chanting Streak','today':'Today','weeklyProgress':'Last 7 Days Progress','detailedHistory':'Detailed History','dangerZone':'Danger Zone','deleteWarning':'This action cannot be undone.','deleteAllHistory':'Delete All History','viewProgress':'View Progress','confirmDeleteAllTitle':'Are you sure?','confirmDeleteAllText':'Your entire chanting history will be permanently deleted.','confirmDeleteRecordTitle':'Delete Record?','confirmDeleteRecordText':'This record will be permanently deleted.','cancel':'Cancel','delete':'Delete', 'noStatsYet': 'No stats yet.', 'soundMode':'Sound Mode', 'optSoundNone':'No Sound', 'optSoundTick':'On Every Chant', 'optSoundMala':'On Mala Completion', 'malaStat': 'Mala', 'chantStat': 'Chant', 'loading': 'Loading...'}
+            'hi': {'controlsTitle':'नियंत्रण','account':'अकाउंट','chantingControls':'जाप नियंत्रण','toggleBlinkStart':'जाप शुरू करें','toggleBlinkStop':'जाप रोकें','selectDeity':'मंत्र','blinkSpeed':'जाप गति','appearance':'दिखावट','fontSize':'अक्षर का आकार','optSmall':'छोटा','optMedium':'मध्यम','optLarge':'बड़ा','optXLarge':'अतिरिक्त बड़ा','language':'भाषा','chantLabel':'जाप','malaLabel':'माला','totalChants':'कुल जाप','signInPrompt':'अपनी प्रगति सिंक करने के लिए साइन इन करें।','signInBtn':'Google से साइन इन करें','signOutBtn':'साइन आउट','allTimeStats':'कुल आँकड़े','todaysStats':'आज के आँकड़े','dashboardTitle':'मेरी प्रगति','grandTotal':'कुल योग','chantingStreak':'जाप की लड़ी','today':'आज','weeklyProgress':'अंतिम 7 दिन की प्रगति','detailedHistory':'विस्तृत इतिहास','dangerZone':'खतरनाक क्षेत्र','deleteWarning':'यह क्रिया पूर्ववत नहीं की जा सकती।','deleteAllHistory':'सारा इतिहास मिटाएं','viewProgress':'प्रगति देखें','confirmDeleteAllTitle':'क्या आप निश्चित हैं?','confirmDeleteAllText':'आपका सारा जाप इतिहास स्थायी रूप से हटा दिया जाएगा।','confirmDeleteRecordTitle':'रिकॉर्ड हटाएं?','confirmDeleteRecordText':'यह रिकॉर्ड स्थायी रूप से हटा दिया जाएगा।','cancel':'रद्द करें','delete':'मिटाएं', 'noStatsYet': 'अभी तक कोई आँकड़े नहीं हैं।', 'soundMode':'ध्वनि मोड', 'optSoundNone':'कोई ध्वनि नहीं', 'optSoundTick':'हर जाप पर', 'optSoundMala':'माला पूरी होने पर', 'malaStat': 'माला', 'chantStat': 'जाप', 'loading': 'लोड हो रहा है...', 'theme': 'थीम', 'readingSpeed': 'पढ़ने की गति', 'fullscreen': 'पूर्ण स्क्रीन', 'exitFullscreen': 'पूर्ण स्क्रीन से बाहर निकलें'},
+            'en': {'controlsTitle':'Controls','account':'Account','chantingControls':'Chanting Controls','toggleBlinkStart':'Start Chanting','toggleBlinkStop':'Stop Chanting','selectDeity':'Mantra','blinkSpeed':'Blink Speed','appearance':'Appearance','fontSize':'Font Size','optSmall':'Small','optMedium':'Medium','optLarge':'Large','optXLarge':'Extra Large','language':'Language','chantLabel':'Chant','malaLabel':'Mala','totalChants':'Grand Total Chants','signInPrompt':'Sign in to sync your progress.','signInBtn':'Sign in with Google','signOutBtn':'Sign Out','allTimeStats':'All-Time Stats','todaysStats':'Today\'s Stats','dashboardTitle':'My Progress','grandTotal':'Grand Total','chantingStreak':'Chanting Streak','today':'Today','weeklyProgress':'Last 7 Days Progress','detailedHistory':'Detailed History','dangerZone':'Danger Zone','deleteWarning':'This action cannot be undone.','deleteAllHistory':'Delete All History','viewProgress':'View Progress','confirmDeleteAllTitle':'Are you sure?','confirmDeleteAllText':'Your entire chanting history will be permanently deleted.','confirmDeleteRecordTitle':'Delete Record?','confirmDeleteRecordText':'This record will be permanently deleted.','cancel':'Cancel','delete':'Delete', 'noStatsYet': 'No stats yet.', 'soundMode':'Sound Mode', 'optSoundNone':'No Sound', 'optSoundTick':'On Every Chant', 'optSoundMala':'On Mala Completion', 'malaStat': 'Mala', 'chantStat': 'Chant', 'loading': 'Loading...', 'theme': 'Theme', 'readingSpeed': 'Reading Speed', 'fullscreen': 'Full Screen', 'exitFullscreen': 'Exit Full Screen'}
         };
 
         const firebaseConfig = { apiKey: "AIzaSyDX4Bm3HBOMTZ2E9f_pPUKykzANumG6Bpg", authDomain: "ramnaam1.firebaseapp.com", projectId: "ramnaam1", storageBucket: "ramnaam1.firebasestorage.app", messagingSenderId: "399389434845", appId: "1:399389434845:web:bf67b08826207481054c34" };
         
-        const getDefaultState = () => ({ user: null, isBlinking: false, currentDeityId: 'ram', history: {}, settings: { language: 'hi', blinkSpeed: 400, fontSizePref: 'medium', bgColor: 'bg-orange-50', soundMode: 'mala_completion' }, currentView: 'chanting' });
+        const getDefaultState = () => ({ user: null, isBlinking: false, currentDeityId: 'original_ram', history: {}, settings: { language: 'hi', blinkSpeed: 400, fontSizePref: 'medium', themeId: 'saffron_bliss', soundMode: 'mala_completion' }, currentView: 'chanting' });
 
         let state = getDefaultState();
-        let blinkInterval, wakeLock = null, wakeLockFailed = false, audioContext = null;
+        let wakeLock = null, wakeLockFailed = false, audioContext = null;
         let confirmationCallback = null;
+        let animationFrameId = null;
+        let saveTimeout;
+        let karaokeAnimator;
 
         const DOMElements = {
             appContainer: document.getElementById('app-container'),
             sidebar: document.getElementById('sidebar'), openSidebarBtn: document.getElementById('open-sidebar-btn'),
             closeSidebarBtn: document.getElementById('close-sidebar-btn'), 
-            deityNameContainer: document.getElementById('deity-name-container'), userInfoContainer: document.getElementById('user-info-container'),
-            toggleBlinkBtn: document.getElementById('toggle-blink-btn'), deitySelector: document.getElementById('deity-selector'),
-            blinkSpeedSelector: document.getElementById('blink-speed-selector'), fontSizeSelector: document.getElementById('font-size-selector'),
-            bgColorSelector: document.getElementById('bg-color-selector'), languageSelector: document.getElementById('language-selector'),
-            soundModeSelector: document.getElementById('sound-mode-selector'), currentCount: document.getElementById('current-count'),
+            mainContentArea: document.getElementById('main-content-area'),
+            deityNameContainer: document.getElementById('deity-name-container'), mainTitle: document.getElementById('main-title'), mainSubtitle: document.getElementById('main-subtitle'),
+            userInfoContainer: document.getElementById('user-info-container'),
+            toggleChantingBtn: document.getElementById('toggle-chanting-btn'), deitySelector: document.getElementById('deity-selector'),
+            speedLabel: document.getElementById('speed-label'), blinkSpeedSelector: document.getElementById('blink-speed-selector'),
+            speedDownBtn: document.getElementById('speed-down-btn'), speedUpBtn: document.getElementById('speed-up-btn'),
+            fontSizeSelector: document.getElementById('font-size-selector'),
+            themeSelector: document.getElementById('theme-selector'), languageSelector: document.getElementById('language-selector'),
+            soundModeSelector: document.getElementById('sound-mode-selector'), fullscreenBtn: document.getElementById('fullscreen-btn'),
+            currentCount: document.getElementById('current-count'),
             malaCount: document.getElementById('mala-count'), totalChants: document.getElementById('total-chants'),
             allTimeStatsContainer: document.getElementById('all-time-stats-container'), errorModal: document.getElementById('error-modal'),
             closeErrorModalBtn: document.getElementById('close-error-modal'), chantingView: document.getElementById('chanting-view'),
@@ -275,18 +309,18 @@
         // --- SMART MANTRA ENGINE ---
         const smartMantraEngine = {
             getFontSize(mantra, preference) {
-                const baseSize = 55; // Base font size in vmin, slightly reduced for better wrapping
-                const factor = Math.log(mantra.length + 1.5); // Adjusted log for smoother scaling
+                const cleanMantra = mantra.replace(/<br>/g, ' ');
+                const baseSize = 55; 
+                const factor = Math.log(cleanMantra.length + 1.5); 
                 const dynamicSize = baseSize / (factor > 1 ? factor : 1);
-                
                 const multipliers = { small: 0.8, medium: 1.0, large: 1.2, xlarge: 1.4 };
                 return (dynamicSize * multipliers[preference]) + 'vmin';
             },
             getBlinkSpeeds(mantra) {
-                const baseSpeeds = [200, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500];
-                const lengthFactor = 40; // ms to add per character, reduced for faster speeds
-                const minSpeed = 200 + (mantra.length * lengthFactor);
-                
+                const cleanMantra = mantra.replace(/<br>/g, ' ');
+                const baseSpeeds = Array.from({ length: 99 }, (_, i) => (i + 1) * 100);
+                const lengthFactor = 40; 
+                const minSpeed = 200 + (cleanMantra.length * lengthFactor);
                 return baseSpeeds.filter(speed => speed >= minSpeed);
             }
         };
@@ -310,70 +344,70 @@
             const lang = state.settings.language;
             document.documentElement.lang = lang;
             const t = TRANSLATIONS[lang];
-            document.querySelectorAll('[data-i18n]').forEach(el => { if (t[el.dataset.i18n]) el.textContent = t[el.dataset.i18n]; });
-            DOMElements.toggleBlinkBtn.textContent = t[state.isBlinking ? 'toggleBlinkStop' : 'toggleBlinkStart'];
-            DOMElements.bgColorSelector.innerHTML = `<option value="bg-orange-50">${t.optLightOrange}</option><option value="bg-white">${t.optWhite}</option><option value="bg-gray-100">${t.optLightGray}</option><option value="bg-blue-50">${t.optLightBlue}</option>`;
+            document.querySelectorAll('[data-i18n]').forEach(el => { if (t[el.dataset.i18n] && !['main-title', 'main-subtitle', 'speed-label'].includes(el.id)) el.textContent = t[el.dataset.i18n]; });
+            DOMElements.toggleChantingBtn.textContent = t[state.isBlinking ? 'toggleBlinkStop' : 'toggleBlinkStart'];
             DOMElements.soundModeSelector.innerHTML = `<option value="mala_completion">${t.optSoundMala}</option><option value="every_blink">${t.optSoundTick}</option><option value="none">${t.optSoundNone}</option>`;
         }
 
+        function debouncedSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => saveState(), 2000);
+        }
         async function saveState() { if (state.user && db) { try { await setDoc(doc(db, 'users', state.user.uid), { history: state.history, settings: state.settings, currentDeityId: state.currentDeityId }); } catch (e) { console.error("Firebase save failed", e) } } }
-        async function loadStateFromFirebase() { if (!state.user || !db) return; try { const docSnap = await getDoc(doc(db, 'users', state.user.uid)); if (docSnap.exists()) { const data = docSnap.data(); state.history = data.history || {}; state.settings = { ...getDefaultState().settings, ...data.settings }; state.currentDeityId = data.currentDeityId || 'ram'; } } catch(e) { console.error("Firebase load failed", e); } }
+        async function loadStateFromFirebase() { if (!state.user || !db) return; try { const docSnap = await getDoc(doc(db, 'users', state.user.uid)); if (docSnap.exists()) { const data = docSnap.data(); state.history = data.history || {}; state.settings = { ...getDefaultState().settings, ...data.settings }; state.currentDeityId = data.currentDeityId || 'original_ram'; } } catch(e) { console.error("Firebase load failed", e); } }
         function getTodaysCount() { const today = new Date().toISOString().split('T')[0]; if (!state.history[today]) state.history[today] = {}; if (!state.history[today][state.currentDeityId]) state.history[today][state.currentDeityId] = { chants: 0, malas: 0 }; return state.history[today][state.currentDeityId]; }
         
         function calculateAllTimeStats() {
             const stats = {};
             DEITIES.forEach(d => { stats[d.id] = { raw_chants: 0 } });
-            
-            for (const date in state.history) {
-                for (const deityId in state.history[date]) {
-                    if (stats[deityId]) {
-                        const { chants, malas } = state.history[date][deityId];
-                        stats[deityId].raw_chants += chants + (malas * 108);
-                    }
-                }
-            }
-            
-            DEITIES.forEach(d => {
-                const total = stats[d.id].raw_chants;
-                stats[d.id].malas = Math.floor(total / 108);
-                stats[d.id].chants = total % 108;
-            });
-
+            for (const date in state.history) { for (const deityId in state.history[date]) { if (stats[deityId]) { const { chants, malas } = state.history[date][deityId]; stats[deityId].raw_chants += chants + (malas * 108); } } }
+            DEITIES.forEach(d => { const total = stats[d.id].raw_chants; stats[d.id].malas = Math.floor(total / 108); stats[d.id].chants = total % 108; });
             return stats;
+        }
+        
+        function updateCounters() {
+            const todaysCount = getTodaysCount();
+            DOMElements.currentCount.textContent = todaysCount.chants;
+            DOMElements.malaCount.textContent = todaysCount.malas;
+            
+            const allTimeStats = calculateAllTimeStats();
+            const grandTotal = Object.values(allTimeStats).reduce((sum, d) => sum + d.raw_chants, 0);
+            DOMElements.totalChants.textContent = grandTotal.toLocaleString();
         }
 
         function render() {
             translateUI();
             const lang = state.settings.language;
-            const currentDeity = DEITIES.find(d => d.id === state.currentDeityId);
+            const currentDeity = DEITIES.find(d => d.id === state.currentDeityId) || DEITIES[0];
             const currentMantra = currentDeity['mantra_' + lang];
+            const currentTheme = THEMES.find(t => t.id === state.settings.themeId) || THEMES[0];
+            const t = TRANSLATIONS[lang];
 
-            DOMElements.deitySelector.innerHTML = DEITIES.map(d => `<option value="${d.id}">${d['name_'+lang]}</option>`).join('');
+            DOMElements.mainTitle.textContent = currentDeity['title_' + lang];
+            DOMElements.mainSubtitle.textContent = currentDeity['subtitle_' + lang];
+            DOMElements.speedLabel.textContent = t[currentDeity.type === 'readable' ? 'readingSpeed' : 'blinkSpeed'];
             
-            // Smart Engine updates
+            DOMElements.deitySelector.innerHTML = DEITIES.map(d => `<option value="${d.id}">${d['name_'+lang]}</option>`).join('');
+            DOMElements.themeSelector.innerHTML = THEMES.map(theme => `<option value="${theme.id}">${theme['name_'+lang]}</option>`).join('');
+            
             const availableSpeeds = smartMantraEngine.getBlinkSpeeds(currentMantra);
             DOMElements.blinkSpeedSelector.innerHTML = availableSpeeds.map(s => `<option value="${s}">${(s/1000).toFixed(1)}s</option>`).join('');
-            
-            if (!availableSpeeds.includes(state.settings.blinkSpeed)) {
-                state.settings.blinkSpeed = availableSpeeds[1] || availableSpeeds[0]; // Default to 0.4s or second fastest
-            }
+            if (!availableSpeeds.includes(state.settings.blinkSpeed)) { state.settings.blinkSpeed = availableSpeeds[1] || availableSpeeds[0]; }
             
             DOMElements.languageSelector.value = state.settings.language; DOMElements.deitySelector.value = state.currentDeityId;
             DOMElements.blinkSpeedSelector.value = state.settings.blinkSpeed; DOMElements.fontSizeSelector.value = state.settings.fontSizePref;
-            DOMElements.bgColorSelector.value = state.settings.bgColor; DOMElements.soundModeSelector.value = state.settings.soundMode;
-            document.body.className = `antialiased overflow-hidden ${state.settings.bgColor}`;
+            DOMElements.themeSelector.value = state.settings.themeId;
+            DOMElements.soundModeSelector.value = state.settings.soundMode;
 
-            DOMElements.deityNameContainer.textContent = currentMantra;
+            document.body.className = `antialiased overflow-hidden ${currentTheme.bg}`;
+            DOMElements.deityNameContainer.style.color = ''; // Reset color
+            DOMElements.deityNameContainer.className = `transition-colors duration-300 ${currentTheme.mantra}`;
+            DOMElements.deityNameContainer.innerHTML = currentMantra;
             DOMElements.deityNameContainer.style.fontSize = smartMantraEngine.getFontSize(currentMantra, state.settings.fontSizePref);
             
-            const todaysCount = getTodaysCount();
-            DOMElements.currentCount.textContent = todaysCount.chants; DOMElements.malaCount.textContent = todaysCount.malas;
+            updateCounters();
             
             const allTimeStats = calculateAllTimeStats();
-            const grandTotal = Object.values(allTimeStats).reduce((sum, d) => sum + d.raw_chants, 0);
-            DOMElements.totalChants.textContent = grandTotal.toLocaleString();
-            
-            const t = TRANSLATIONS[lang];
             DOMElements.allTimeStatsContainer.innerHTML = DEITIES.map(d => {
                 const stats = allTimeStats[d.id];
                 if (stats.raw_chants === 0) return '';
@@ -426,26 +460,146 @@
         function playTickSound() { if (!audioContext) return; const o = audioContext.createOscillator(), g = audioContext.createGain(); o.connect(g); g.connect(audioContext.destination); o.type = 'sine'; o.frequency.setValueAtTime(220, audioContext.currentTime); g.gain.setValueAtTime(0.1, audioContext.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.1); o.start(audioContext.currentTime); o.stop(audioContext.currentTime + 0.1); }
         function playBellSound() { if (!audioContext) return; const o = audioContext.createOscillator(), g = audioContext.createGain(); o.connect(g); g.connect(audioContext.destination); o.type = 'sine'; o.frequency.setValueAtTime(1046.50, audioContext.currentTime); g.gain.setValueAtTime(0.5, audioContext.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 1); o.start(audioContext.currentTime); o.stop(audioContext.currentTime + 1); }
 
-        function blink() { const c = DOMElements.deityNameContainer; c.style.visibility = (c.style.visibility === 'hidden') ? 'visible' : 'hidden'; if (c.style.visibility === 'visible') { const t = getTodaysCount(); t.chants++; if (state.settings.soundMode === 'every_blink') playTickSound(); if (t.chants >= 108) { t.malas++; t.chants = 0; if (state.settings.soundMode !== 'none') playBellSound(); c.classList.add('mala-glow'); setTimeout(() => c.classList.remove('mala-glow'), 1000); } render(); saveState(); } }
-        async function updateBlinking() { clearInterval(blinkInterval); DOMElements.toggleBlinkBtn.textContent = TRANSLATIONS[state.settings.language][state.isBlinking ? 'toggleBlinkStop' : 'toggleBlinkStart']; if (state.isBlinking && document.visibilityState === 'visible') { blinkInterval = setInterval(blink, state.settings.blinkSpeed); if ('wakeLock' in navigator && !wakeLock && !wakeLockFailed) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) { wakeLockFailed = true; console.warn(`Wake Lock failed: ${err.message}`); } } } else { if (wakeLock) { await wakeLock.release(); wakeLock = null; } DOMElements.deityNameContainer.style.visibility = 'visible'; } }
+        let lastTimestamp = 0;
 
-        function handleToggleBlink() { initAudio(); state.isBlinking = !state.isBlinking; updateBlinking(); saveState(); }
-        function handleVisibilityChange() { updateBlinking(); }
+        function animationLoop(timestamp) {
+            if (!state.isBlinking) return;
+            animationFrameId = requestAnimationFrame(animationLoop);
+            if (timestamp - lastTimestamp < state.settings.blinkSpeed) return;
+            lastTimestamp = timestamp;
+            const currentDeity = DEITIES.find(d => d.id === state.currentDeityId) || DEITIES[0];
+            if (currentDeity.type === 'blinkable') {
+                blink();
+            }
+        }
         
+        function blink() { const c = DOMElements.deityNameContainer; c.style.visibility = (c.style.visibility === 'hidden') ? 'visible' : 'hidden'; if (c.style.visibility === 'visible') { incrementChant(1); } }
+        
+        function handleKaraoke() {
+            const lang = state.settings.language;
+            const currentTheme = THEMES.find(t => t.id === state.settings.themeId) || THEMES[0];
+            const mantra = DEITIES.find(d => d.id === state.currentDeityId)['mantra_'+lang];
+            const mantraParts = mantra.split(/(<br>|\s+)/).filter(p => p.length > 0);
+            const words = mantraParts.filter(p => p !== '<br>' && p.trim() !== '');
+            const wordDuration = state.settings.blinkSpeed / words.length;
+
+            DOMElements.deityNameContainer.innerHTML = mantraParts.map((part, i) => {
+                if (part === '<br>') return part;
+                if (part.trim() === '') return ' '; 
+                return `<span id="word-${i}" class="karaoke-word">${part}</span>`;
+            }).join('');
+
+            let currentWordIndex = 0;
+            function highlightWord() {
+                if(!state.isBlinking) return;
+                const currentWordId = mantraParts.indexOf(words[currentWordIndex]);
+                if (currentWordIndex > 0) { 
+                    const prevWordId = mantraParts.indexOf(words[currentWordIndex - 1]);
+                    document.getElementById(`word-${prevWordId}`)?.classList.remove(currentTheme.highlight, 'font-bold'); 
+                } else { 
+                    document.querySelectorAll('.karaoke-word').forEach(el => el.classList.remove(currentTheme.highlight, 'font-bold'));
+                }
+                document.getElementById(`word-${currentWordId}`)?.classList.add(currentTheme.highlight, 'font-bold');
+                if (state.settings.soundMode === 'every_blink') playTickSound();
+                
+                currentWordIndex++;
+                if (currentWordIndex < words.length) {
+                    karaokeAnimator.start(highlightWord, wordDuration);
+                } else {
+                    incrementChant(1);
+                    karaokeAnimator.start(handleKaraoke, wordDuration);
+                }
+            }
+            highlightWord();
+        }
+
+        function incrementChant(count) {
+            const t = getTodaysCount(); t.chants += count; 
+            if (t.chants >= 108) { 
+                const newMalas = Math.floor(t.chants / 108);
+                t.malas += newMalas; 
+                t.chants %= 108; 
+                if (state.settings.soundMode !== 'none') {
+                    for(let i=0; i<newMalas; i++) setTimeout(() => playBellSound(), i * 200);
+                }
+                DOMElements.deityNameContainer.classList.add('mala-glow'); 
+                setTimeout(() => DOMElements.deityNameContainer.classList.remove('mala-glow'), 1000); 
+            } 
+            updateCounters(); 
+            debouncedSave();
+        }
+
+        async function updateChantingAnimation() { 
+            cancelAnimationFrame(animationFrameId);
+            karaokeAnimator?.stop();
+            const currentDeity = DEITIES.find(d => d.id === state.currentDeityId) || DEITIES[0];
+            DOMElements.toggleChantingBtn.textContent = TRANSLATIONS[state.settings.language][state.isBlinking ? 'toggleBlinkStop' : 'toggleBlinkStart']; 
+
+            if (!state.isBlinking || document.visibilityState !== 'visible') {
+                if (wakeLock) { await wakeLock.release(); wakeLock = null; } 
+                render(); // Resets karaoke text to normal
+                DOMElements.deityNameContainer.style.visibility = 'visible';
+                return;
+            }
+
+            if ('wakeLock' in navigator && !wakeLock && !wakeLockFailed) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) { wakeLockFailed = true; console.warn(`Wake Lock failed: ${err.message}`); } } 
+            
+            if (currentDeity.type === 'readable') {
+                handleKaraoke();
+            } else {
+                animationFrameId = requestAnimationFrame(animationLoop);
+            }
+        }
+
+        function handleToggleChanting() { initAudio(); state.isBlinking = !state.isBlinking; updateChantingAnimation(); debouncedSave(); }
+        function handleVisibilityChange() { updateChantingAnimation(); }
+        
+        function handleSpeedChange(direction) {
+            const selector = DOMElements.blinkSpeedSelector;
+            const currentIndex = selector.selectedIndex;
+            const newIndex = currentIndex + direction;
+            if (newIndex >= 0 && newIndex < selector.options.length) {
+                selector.selectedIndex = newIndex;
+                state.settings.blinkSpeed = parseInt(selector.value);
+                render();
+                if (state.isBlinking) updateChantingAnimation();
+                debouncedSave();
+            }
+        }
+
         function createHandler(key, isSetting = false) { 
             return (e) => { 
                 const value = e.target.value; 
                 if(isSetting) state.settings[key] = value; else state[key] = value; 
                 if (key === 'blinkSpeed') state.settings.blinkSpeed = parseInt(value);
                 if (key === 'fontSizePref') state.settings.fontSizePref = value;
+                if (key === 'themeId') state.settings.themeId = value;
                 render(); 
-                if (state.isBlinking) updateBlinking();
+                if (state.isBlinking) updateChantingAnimation();
                 saveState(); 
             } 
         }
 
-        async function handleSignIn() { if (!auth) return; try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (error) { if (error.code === 'auth/unauthorized-domain') DOMElements.errorModal.classList.remove('hidden'); else console.error('Auth error:', error); } }
-        async function handleSignOut() { if (!auth) return; await saveState(); await signOut(auth); }
+        async function handleSignIn() { 
+            if (!auth) return;
+            const btn = document.getElementById('sign-in-button');
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+            try { await signInWithPopup(auth, new GoogleAuthProvider()); } 
+            catch (error) { 
+                if (error.code === 'auth/unauthorized-domain') DOMElements.errorModal.classList.remove('hidden'); 
+                else console.error('Auth error:', error);
+                renderUserInfo();
+            } 
+        }
+        async function handleSignOut() { 
+            if (!auth) return;
+            const btn = document.getElementById('sign-out-button');
+            btn.disabled = true;
+            btn.textContent = TRANSLATIONS[state.settings.language].loading;
+            await saveState(); 
+            await signOut(auth); 
+        }
         async function handleViewProgress() {
             const btn = document.getElementById('view-progress-btn');
             const spinner = btn.querySelector('svg');
@@ -478,18 +632,32 @@
         async function init() {
             DOMElements.openSidebarBtn.addEventListener('click', () => DOMElements.sidebar.classList.remove('-translate-x-full'));
             DOMElements.closeSidebarBtn.addEventListener('click', () => DOMElements.sidebar.classList.add('-translate-x-full'));
-            DOMElements.chantingView.addEventListener('click', (e) => { if (window.innerWidth < 768 && !DOMElements.sidebar.contains(e.target) && !DOMElements.openSidebarBtn.contains(e.target) ) { DOMElements.sidebar.classList.add('-translate-x-full'); } });
+            DOMElements.mainContentArea.addEventListener('click', (e) => { if (window.innerWidth < 768 && !DOMElements.sidebar.contains(e.target) && !DOMElements.openSidebarBtn.contains(e.target) ) { DOMElements.sidebar.classList.add('-translate-x-full'); } });
             DOMElements.closeErrorModalBtn.addEventListener('click', () => DOMElements.errorModal.classList.add('hidden'));
             DOMElements.backToChantingBtn.addEventListener('click', () => switchView('chanting'));
             
-            DOMElements.toggleBlinkBtn.addEventListener('click', handleToggleBlink);
+            DOMElements.toggleChantingBtn.addEventListener('click', handleToggleChanting);
             DOMElements.deitySelector.addEventListener('change', createHandler('currentDeityId'));
             DOMElements.blinkSpeedSelector.addEventListener('change', createHandler('blinkSpeed', true));
+            DOMElements.speedDownBtn.addEventListener('click', () => handleSpeedChange(-1));
+            DOMElements.speedUpBtn.addEventListener('click', () => handleSpeedChange(1));
             DOMElements.fontSizeSelector.addEventListener('change', createHandler('fontSizePref', true));
-            DOMElements.bgColorSelector.addEventListener('change', createHandler('bgColor', true));
+            DOMElements.themeSelector.addEventListener('change', createHandler('themeId', true));
             DOMElements.languageSelector.addEventListener('change', createHandler('language', true));
             DOMElements.soundModeSelector.addEventListener('change', createHandler('soundMode', true));
+            DOMElements.fullscreenBtn.addEventListener('click', () => { 
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            });
             
+            document.addEventListener('fullscreenchange', () => {
+                const t = TRANSLATIONS[state.settings.language];
+                DOMElements.fullscreenBtn.textContent = document.fullscreenElement ? t.exitFullscreen : t.fullscreen;
+            });
+
             DOMElements.deleteAllHistoryBtn.addEventListener('click', () => showConfirmation('confirmDeleteAllTitle', 'confirmDeleteAllText', () => { state.history = {}; saveState(); renderDashboard(); render(); }));
             DOMElements.detailedHistoryContainer.addEventListener('click', e => { const btn = e.target.closest('.delete-record-btn'); if(btn) { const {date, deity} = btn.dataset; showConfirmation('confirmDeleteRecordTitle', 'confirmDeleteRecordText', () => { delete state.history[date][deity]; if(Object.keys(state.history[date]).length === 0) delete state.history[date]; saveState(); renderDashboard(); render(); }); } });
             DOMElements.modalCancelBtn.addEventListener('click', () => DOMElements.confirmationModal.classList.add('hidden'));
@@ -497,14 +665,19 @@
 
             document.addEventListener('visibilitychange', handleVisibilityChange);
             
-            // Render initial state instantly, then check auth in background
+            karaokeAnimator = {
+                timeoutId: null,
+                stop() { clearTimeout(this.timeoutId); },
+                start(handler, duration) { this.stop(); this.timeoutId = setTimeout(handler, duration); }
+            };
+
             render();
             DOMElements.appContainer.classList.remove('opacity-0');
 
             if (auth) {
                 onAuthStateChanged(auth, async (user) => {
                     state.isBlinking = false;
-                    await updateBlinking(); // ensure blinking stops
+                    await updateChantingAnimation();
 
                     if (user) {
                         state.user = { uid: user.uid, displayName: user.displayName, photoURL: user.photoURL };
@@ -513,7 +686,7 @@
                         state = getDefaultState(); 
                     }
                     
-                    render(); // Re-render with the correct user state
+                    render();
                 });
             }
         }
