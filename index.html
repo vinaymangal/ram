@@ -31,10 +31,10 @@
         ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 
         #deity-name-container {
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-wrap: wrap; /* This prevents the karaoke text from overflowing */
             width: 100%;
             height: 100%;
             font-weight: bold;
@@ -43,6 +43,17 @@
             max-width: 95vw;
             text-align: center;
             line-height: 1.2;
+        }
+        .mantra-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         #sidebar {
@@ -56,10 +67,6 @@
             0% { text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
             50% { text-shadow: 0 0 25px currentColor, 0 0 10px #fde68a; }
             100% { text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
-        }
-        
-        .karaoke-word {
-            transition: color 0.2s ease-in-out;
         }
     </style>
 </head>
@@ -222,7 +229,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const DEITIES = [
             // Original Mantras
@@ -233,10 +240,10 @@
             { id: 'original_radha', type: 'blinkable', name_hi: 'राधा जी', name_en: 'Radha Ji', mantra_hi: 'राधा', mantra_en: 'Radha', title_hi: 'राधा नाम जाप', title_en: 'Radha Naam Jaap', subtitle_hi: 'राधा नाम का अमृत जपें', subtitle_en: 'Chant the nectar of Radha\'s name' },
             // Expanded Mantras
             { id: 'sarvochcha_vastavikta', type: 'blinkable', name_hi: 'सर्वोच्च वास्तविकता', name_en: 'Supreme Reality', mantra_hi: 'ॐ', mantra_en: 'Om', title_hi: 'ब्रह्म जाप', title_en: 'Brahman Jaap', subtitle_hi: 'ब्रह्मांड की ध्वनि का जाप करें', subtitle_en: 'Chant the sound of the universe' },
-            { id: 'gayatri_mantra', type: 'readable', name_hi: 'गायत्री मंत्र', name_en: 'Gayatri Mantra', mantra_hi: 'ॐ भूर्भुवः स्वः<br>तत्सवितुर्वरेण्यं<br>भर्गो देवस्य धीमहि<br>धियो यो नः प्रचोदयात्', mantra_en: 'Om Bhur Bhuvah Svah<br>Tat Savitur Varenyam<br>Bhargo Devasya Dhimahi<br>Dhiyo Yo Nah Prachodayat', title_hi: 'गायत्री जाप', title_en: 'Gayatri Jaap', subtitle_hi: 'दिव्य प्रकाश का ध्यान करें', subtitle_en: 'Meditate on the divine light' },
+            { id: 'gayatri_mantra', type: 'paced_readable', name_hi: 'गायत्री मंत्र', name_en: 'Gayatri Mantra', mantra_hi: 'ॐ भूर्भुवः स्वः<br>तत्सवितुर्वरेण्यं<br>भर्गो देवस्य धीमहि<br>धियो यो नः प्रचोदयात्', mantra_en: 'Om Bhur Bhuvah Svah<br>Tat Savitur Varenyam<br>Bhargo Devasya Dhimahi<br>Dhiyo Yo Nah Prachodayat', title_hi: 'गायत्री जाप', title_en: 'Gayatri Jaap', subtitle_hi: 'दिव्य प्रकाश का ध्यान करें', subtitle_en: 'Meditate on the divine light' },
             { id: 'shiva', type: 'blinkable', name_hi: 'भगवान शिव', name_en: 'Lord Shiva', mantra_hi: 'ॐ नमः शिवाय', mantra_en: 'Om Namah Shivaya', title_hi: 'शिव पंचाक्षर जाप', title_en: 'Shiva Panchakshara Jaap', subtitle_hi: 'पंचाक्षर मंत्र का जाप करें', subtitle_en: 'Chant the five-syllable mantra' },
-            { id: 'maha_mrityunjaya', type: 'readable', name_hi: 'महा मृत्युंजय मंत्र', name_en: 'Maha Mrityunjaya Mantra', mantra_hi: 'ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम् ।<br>उर्वारुकमिव बन्धनान् मृत्योर्मुक्षीय माऽमृतात् ॥', mantra_en: 'Om Tryambakam Yajamahe Sugandhim Pushtivardhanam,<br>Urvarukamiva Bandhanan Mrityor Mukshiya Maamritat', title_hi: 'महा मृत्युंजय जाप', title_en: 'Maha Mrityunjaya Jaap', subtitle_hi: 'आरोग्य और मोक्ष के लिए जाप करें', subtitle_en: 'Chant for healing and liberation' },
-            { id: 'hare_krishna', type: 'readable', name_hi: 'हरे कृष्ण (महा-मंत्र)', name_en: 'Hare Krishna (Maha-mantra)', mantra_hi: 'हरे कृष्ण हरे कृष्ण<br>कृष्ण कृष्ण हरे हरे<br>हरे राम हरे राम<br>राम राम हरे हरे', mantra_en: 'Hare Krishna Hare Krishna<br>Krishna Krishna Hare Hare<br>Hare Rama Hare Rama<br>Rama Rama Hare Hare', title_hi: 'महा-मंत्र जाप', title_en: 'Maha-Mantra Jaap', subtitle_hi: 'प्रेम से महा-मंत्र का जाप करें', subtitle_en: 'Chant the great mantra with love' },
+            { id: 'maha_mrityunjaya', type: 'paced_readable', name_hi: 'महा मृत्युंजय मंत्र', name_en: 'Maha Mrityunjaya Mantra', mantra_hi: 'ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम् ।<br>उर्वारुकमिव बन्धनान् मृत्योर्मुक्षीय माऽमृतात् ॥', mantra_en: 'Om Tryambakam Yajamahe Sugandhim Pushtivardhanam,<br>Urvarukamiva Bandhanan Mrityor Mukshiya Maamritat', title_hi: 'महा मृत्युंजय जाप', title_en: 'Maha Mrityunjaya Jaap', subtitle_hi: 'आरोग्य और मोक्ष के लिए जाप करें', subtitle_en: 'Chant for healing and liberation' },
+            { id: 'hare_krishna', type: 'paced_readable', name_hi: 'हरे कृष्ण (महा-मंत्र)', name_en: 'Hare Krishna (Maha-mantra)', mantra_hi: 'हरे कृष्ण हरे कृष्ण<br>कृष्ण कृष्ण हरे हरे<br>हरे राम हरे राम<br>राम राम हरे हरे', mantra_en: 'Hare Krishna Hare Krishna<br>Krishna Krishna Hare Hare<br>Hare Rama Hare Rama<br>Rama Rama Hare Hare', title_hi: 'महा-मंत्र जाप', title_en: 'Maha-Mantra Jaap', subtitle_hi: 'प्रेम से महा-मंत्र का जाप करें', subtitle_en: 'Chant the great mantra with love' },
             { id: 'vishnu', type: 'blinkable', name_hi: 'भगवान विष्णु', name_en: 'Lord Vishnu', mantra_hi: 'ॐ नमो भगवते वासुदेवाय', mantra_en: 'Om Namo Bhagavate Vasudevaya', title_hi: 'विष्णु जाप', title_en: 'Vishnu Jaap', subtitle_hi: 'संरक्षक का आह्वान करें', subtitle_en: 'Invoke the preserver' },
             { id: 'ram', type: 'blinkable', name_hi: 'श्री राम (पूर्ण)', name_en: 'Shri Ram (Full)', mantra_hi: 'श्री राम जय राम जय जय राम', mantra_en: 'Shri Ram Jai Ram Jai Jai Ram', title_hi: 'राम तारक मंत्र', title_en: 'Ram Taarak Mantra', subtitle_hi: 'तारक मंत्र का जाप करें', subtitle_en: 'Chant the liberating mantra' },
             { id: 'ganesh', type: 'blinkable', name_hi: 'भगवान गणेश', name_en: 'Lord Ganesh', mantra_hi: 'ॐ गं गणपतये नमः', mantra_en: 'Om Gan Ganapataye Namah', title_hi: 'गणेश जाप', title_en: 'Ganesh Jaap', subtitle_hi: 'बाधाओं को दूर करने के लिए जाप करें', subtitle_en: 'Chant to remove obstacles' },
@@ -245,7 +252,7 @@
             { id: 'hanuman', type: 'blinkable', name_hi: 'हनुमान जी', name_en: 'Hanuman Ji', mantra_hi: 'ॐ हनुमते नमः', mantra_en: 'Om Hanumate Namah', title_hi: 'हनुमान जाप', title_en: 'Hanuman Jaap', subtitle_hi: 'भक्ति और शक्ति के लिए जाप करें', subtitle_en: 'Chant for devotion and strength' },
             { id: 'saraswati', type: 'blinkable', name_hi: 'देवी सरस्वती', name_en: 'Devi Saraswati', mantra_hi: 'ॐ ऐं सरस्वत्यै नमः', mantra_en: 'Om Aim Sarasvatyai Namah', title_hi: 'सरस्वती जाप', title_en: 'Saraswati Jaap', subtitle_hi: 'ज्ञान और विद्या के लिए जाप करें', subtitle_en: 'Chant for knowledge and wisdom' },
             { id: 'surya', type: 'blinkable', name_hi: 'सूर्य देव', name_en: 'Surya Dev', mantra_hi: 'ॐ सूर्याय नमः', mantra_en: 'Om Suryaya Namah', title_hi: 'सूर्य जाप', title_en: 'Surya Jaap', subtitle_hi: 'ऊर्जा और जीवन शक्ति के लिए जाप करें', subtitle_en: 'Chant for energy and vitality' },
-            { id: 'shanti', type: 'readable', name_hi: 'सार्वभौमिक शांति', name_en: 'Universal Peace', mantra_hi: 'ॐ सर्वेशां स्वस्तिर्भवतु ।<br>सर्वेशां शान्तिर्भवतु ।<br>सर्वेशां पुर्णंभवतु ।<br>सर्वेशां मङ्गलंभवतु ।', mantra_en: 'Om Sarvesham Svastir Bhavatu<br>Sarvesham Shantir Bhavatu<br>Sarvesham Purnam Bhavatu<br>Sarvesham Mangalam Bhavatu', title_hi: 'शांति पाठ', title_en: 'Shanti Paath', subtitle_hi: 'सभी के लिए शांति का जाप करें', subtitle_en: 'Chant for the well-being of all' },
+            { id: 'shanti', type: 'paced_readable', name_hi: 'सार्वभौमिक शांति', name_en: 'Universal Peace', mantra_hi: 'ॐ सर्वेशां स्वस्तिर्भवतु ।<br>सर्वेशां शानतिर्भवतु ।<br>सर्वेशां पुर्णंभवतु ।<br>सर्वेशां मङ्गलंभवतु ।', mantra_en: 'Om Sarvesham Svastir Bhavatu<br>Sarvesham Shantir Bhavatu<br>Sarvesham Purnam Bhavatu<br>Sarvesham Mangalam Bhavatu', title_hi: 'शांति पाठ', title_en: 'Shanti Paath', subtitle_hi: 'सभी के लिए शांति का जाप करें', subtitle_en: 'Chant for the well-being of all' },
         ];
 
         const THEMES = [
@@ -276,6 +283,7 @@
         let animationFrameId = null;
         let saveTimeout;
         let karaokeAnimator;
+        let guidedChantScheduleCache = {};
 
         const DOMElements = {
             appContainer: document.getElementById('app-container'),
@@ -326,38 +334,72 @@
             }
         };
 
-        async function switchView(view) {
-            state.currentView = view;
-            if (view === 'dashboard') {
-                renderDashboard();
-                DOMElements.chantingView.classList.add('hidden');
-                DOMElements.sidebar.classList.add('hidden');
-                DOMElements.dashboardView.classList.remove('hidden');
-            } else {
-                DOMElements.chantingView.classList.remove('hidden');
-                DOMElements.sidebar.classList.remove('hidden');
-                DOMElements.sidebar.classList.add('flex');
-                DOMElements.dashboardView.classList.add('hidden');
+        // --- DATA & STATE MANAGEMENT ---
+        function updateState(newState) {
+            const oldState = { ...state };
+            state = { ...state, ...newState };
+            // Invalidate guided chant cache if relevant settings change
+            if(oldState.currentDeityId !== state.currentDeityId || oldState.settings.fontSizePref !== state.settings.fontSizePref || oldState.settings.language !== state.settings.language) {
+                guidedChantScheduleCache = {};
             }
+            updateUI(oldState);
         }
 
-        function translateUI() {
-            const lang = state.settings.language;
-            document.documentElement.lang = lang;
-            const t = TRANSLATIONS[lang];
-            document.querySelectorAll('[data-i18n]').forEach(el => { if (t[el.dataset.i18n] && !['main-title', 'main-subtitle', 'speed-label'].includes(el.id)) el.textContent = t[el.dataset.i18n]; });
-            DOMElements.toggleChantingBtn.textContent = t[state.isBlinking ? 'toggleBlinkStop' : 'toggleBlinkStart'];
-            DOMElements.soundModeSelector.innerHTML = `<option value="mala_completion">${t.optSoundMala}</option><option value="every_blink">${t.optSoundTick}</option><option value="none">${t.optSoundNone}</option>`;
-        }
-
-        function debouncedSave() {
+        async function saveState(forceFullSave = false) {
+            if (!state.user || !db) return;
             clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => saveState(), 2000);
+            saveTimeout = setTimeout(async () => {
+                try {
+                    const userDocRef = doc(db, 'users', state.user.uid);
+                    if (forceFullSave) {
+                        await setDoc(userDocRef, { history: state.history, settings: state.settings, currentDeityId: state.currentDeityId });
+                    } else {
+                        // More efficient granular update
+                        await updateDoc(userDocRef, { settings: state.settings, currentDeityId: state.currentDeityId });
+                    }
+                } catch (e) {
+                    console.error("Firebase save failed", e);
+                }
+            }, 2000);
         }
-        async function saveState() { if (state.user && db) { try { await setDoc(doc(db, 'users', state.user.uid), { history: state.history, settings: state.settings, currentDeityId: state.currentDeityId }); } catch (e) { console.error("Firebase save failed", e) } } }
-        async function loadStateFromFirebase() { if (!state.user || !db) return; try { const docSnap = await getDoc(doc(db, 'users', state.user.uid)); if (docSnap.exists()) { const data = docSnap.data(); state.history = data.history || {}; state.settings = { ...getDefaultState().settings, ...data.settings }; state.currentDeityId = data.currentDeityId || 'original_ram'; } } catch(e) { console.error("Firebase load failed", e); } }
-        function getTodaysCount() { const today = new Date().toISOString().split('T')[0]; if (!state.history[today]) state.history[today] = {}; if (!state.history[today][state.currentDeityId]) state.history[today][state.currentDeityId] = { chants: 0, malas: 0 }; return state.history[today][state.currentDeityId]; }
         
+        async function saveHistoryState() {
+            if (!state.user || !db) return;
+            const today = new Date().toISOString().split('T')[0];
+            const todaysCount = state.history[today]?.[state.currentDeityId];
+            if (!todaysCount) return;
+
+            try {
+                const userDocRef = doc(db, 'users', state.user.uid);
+                // Granular update for just today's history for the current deity
+                await updateDoc(userDocRef, {
+                    [`history.${today}.${state.currentDeityId}`]: todaysCount
+                });
+            } catch (e) { console.error("Firebase history save failed", e); }
+        }
+
+        async function loadStateFromFirebase() {
+            if (!state.user || !db) return;
+            try {
+                const docSnap = await getDoc(doc(db, 'users', state.user.uid));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    updateState({
+                        history: data.history || {},
+                        settings: { ...getDefaultState().settings, ...data.settings },
+                        currentDeityId: data.currentDeityId || 'original_ram'
+                    });
+                }
+            } catch(e) { console.error("Firebase load failed", e); }
+        }
+
+        function getTodaysCount() {
+            const today = new Date().toISOString().split('T')[0];
+            if (!state.history[today]) state.history[today] = {};
+            if (!state.history[today][state.currentDeityId]) state.history[today][state.currentDeityId] = { chants: 0, malas: 0 };
+            return state.history[today][state.currentDeityId];
+        }
+
         function calculateAllTimeStats() {
             const stats = {};
             DEITIES.forEach(d => { stats[d.id] = { raw_chants: 0 } });
@@ -365,60 +407,116 @@
             DEITIES.forEach(d => { const total = stats[d.id].raw_chants; stats[d.id].malas = Math.floor(total / 108); stats[d.id].chants = total % 108; });
             return stats;
         }
+
+        // --- UI UPDATE LOGIC ---
+        function updateUI(oldState = {}) {
+            // Only update parts of the UI that have actually changed
+            if (oldState.settings?.language !== state.settings.language) {
+                translateUI();
+                populateDropdowns();
+            }
+            
+            updateChantArea(oldState);
+            updateControls(oldState);
+            updateCounters(); // Always update counters as they change frequently
+
+            if (state.currentView === 'dashboard') {
+                renderDashboard();
+            } else if (state.currentView !== oldState.currentView) {
+                // Switch view if it has changed
+                DOMElements.chantingView.classList.remove('hidden');
+                DOMElements.sidebar.classList.remove('hidden', '-translate-x-full');
+                DOMElements.sidebar.classList.add('flex');
+                DOMElements.dashboardView.classList.add('hidden');
+            }
+            
+            if (oldState.user?.uid !== state.user?.uid) {
+                renderUserInfo();
+            }
+        }
         
+        function updateChantArea(oldState = {}) {
+             const currentDeity = DEITIES.find(d => d.id === state.currentDeityId) || DEITIES[0];
+             const lang = state.settings.language;
+
+            // Only update if something relevant has changed
+            if (oldState.currentDeityId !== state.currentDeityId || oldState.settings?.language !== lang || oldState.settings?.themeId !== state.settings.themeId || oldState.settings?.fontSizePref !== state.settings.fontSizePref) {
+                const currentMantra = currentDeity['mantra_' + lang];
+                const currentTheme = THEMES.find(t => t.id === state.settings.themeId) || THEMES[0];
+                
+                DOMElements.mainTitle.textContent = currentDeity['title_' + lang];
+                DOMElements.mainSubtitle.textContent = currentDeity['subtitle_' + lang];
+                
+                document.body.className = `antialiased overflow-hidden ${currentTheme.bg}`;
+                DOMElements.deityNameContainer.innerHTML = `<div class="mantra-layer ${currentTheme.mantra}">${currentMantra}</div>`;
+                DOMElements.deityNameContainer.style.fontSize = smartMantraEngine.getFontSize(currentMantra, state.settings.fontSizePref);
+            }
+        }
+        
+        function updateControls(oldState = {}) {
+            const t = TRANSLATIONS[state.settings.language];
+            const currentDeity = DEITIES.find(d => d.id === state.currentDeityId) || DEITIES[0];
+
+            DOMElements.toggleChantingBtn.textContent = t[state.isBlinking ? 'toggleBlinkStop' : 'toggleBlinkStart'];
+            DOMElements.speedLabel.textContent = t[(currentDeity.type === 'paced_readable') ? 'readingSpeed' : 'blinkSpeed'];
+            
+            if(oldState.currentDeityId !== state.currentDeityId) {
+                const availableSpeeds = smartMantraEngine.getBlinkSpeeds(currentDeity['mantra_' + state.settings.language]);
+                DOMElements.blinkSpeedSelector.innerHTML = availableSpeeds.map(s => `<option value="${s}">${(s/1000).toFixed(1)}s</option>`).join('');
+                if (!availableSpeeds.includes(state.settings.blinkSpeed)) {
+                     state.settings.blinkSpeed = availableSpeeds[1] || availableSpeeds[0]; // Mutating state here is acceptable as it's a direct consequence
+                }
+            }
+
+            // Update selector values
+            DOMElements.deitySelector.value = state.currentDeityId;
+            DOMElements.blinkSpeedSelector.value = state.settings.blinkSpeed;
+            DOMElements.fontSizeSelector.value = state.settings.fontSizePref;
+            DOMElements.themeSelector.value = state.settings.themeId;
+            DOMElements.languageSelector.value = state.settings.language;
+            DOMElements.soundModeSelector.value = state.settings.soundMode;
+        }
+
         function updateCounters() {
             const todaysCount = getTodaysCount();
             DOMElements.currentCount.textContent = todaysCount.chants;
             DOMElements.malaCount.textContent = todaysCount.malas;
             
-            const allTimeStats = calculateAllTimeStats();
+            const allTimeStats = calculateAllTimeStats(); // This could be memoized for even better performance
             const grandTotal = Object.values(allTimeStats).reduce((sum, d) => sum + d.raw_chants, 0);
             DOMElements.totalChants.textContent = grandTotal.toLocaleString();
-        }
 
-        function render() {
-            translateUI();
             const lang = state.settings.language;
-            const currentDeity = DEITIES.find(d => d.id === state.currentDeityId) || DEITIES[0];
-            const currentMantra = currentDeity['mantra_' + lang];
-            const currentTheme = THEMES.find(t => t.id === state.settings.themeId) || THEMES[0];
             const t = TRANSLATIONS[lang];
-
-            DOMElements.mainTitle.textContent = currentDeity['title_' + lang];
-            DOMElements.mainSubtitle.textContent = currentDeity['subtitle_' + lang];
-            DOMElements.speedLabel.textContent = t[currentDeity.type === 'readable' ? 'readingSpeed' : 'blinkSpeed'];
             
-            DOMElements.deitySelector.innerHTML = DEITIES.map(d => `<option value="${d.id}">${d['name_'+lang]}</option>`).join('');
-            DOMElements.themeSelector.innerHTML = THEMES.map(theme => `<option value="${theme.id}">${theme['name_'+lang]}</option>`).join('');
-            
-            const availableSpeeds = smartMantraEngine.getBlinkSpeeds(currentMantra);
-            DOMElements.blinkSpeedSelector.innerHTML = availableSpeeds.map(s => `<option value="${s}">${(s/1000).toFixed(1)}s</option>`).join('');
-            if (!availableSpeeds.includes(state.settings.blinkSpeed)) { state.settings.blinkSpeed = availableSpeeds[1] || availableSpeeds[0]; }
-            
-            DOMElements.languageSelector.value = state.settings.language; DOMElements.deitySelector.value = state.currentDeityId;
-            DOMElements.blinkSpeedSelector.value = state.settings.blinkSpeed; DOMElements.fontSizeSelector.value = state.settings.fontSizePref;
-            DOMElements.themeSelector.value = state.settings.themeId;
-            DOMElements.soundModeSelector.value = state.settings.soundMode;
-
-            document.body.className = `antialiased overflow-hidden ${currentTheme.bg}`;
-            DOMElements.deityNameContainer.style.color = ''; // Reset color
-            DOMElements.deityNameContainer.className = `transition-colors duration-300 ${currentTheme.mantra}`;
-            DOMElements.deityNameContainer.innerHTML = currentMantra;
-            DOMElements.deityNameContainer.style.fontSize = smartMantraEngine.getFontSize(currentMantra, state.settings.fontSizePref);
-            
-            updateCounters();
-            
-            const allTimeStats = calculateAllTimeStats();
             DOMElements.allTimeStatsContainer.innerHTML = DEITIES.map(d => {
                 const stats = allTimeStats[d.id];
                 if (stats.raw_chants === 0) return '';
                 return `<div class="flex justify-between items-center"><span class="font-medium">${d['name_'+lang]}</span><span class="font-bold text-gray-600">${stats.malas} ${t.malaStat}, ${stats.chants} ${t.chantStat}</span></div>`;
             }).join('') || `<p class="text-xs text-gray-500">${t.noStatsYet}</p>`;
+        }
 
-            renderUserInfo();
+        function translateUI() {
+            document.documentElement.lang = state.settings.language;
+            const t = TRANSLATIONS[state.settings.language];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                if (t[el.dataset.i18n]) el.textContent = t[el.dataset.i18n];
+            });
+        }
+        
+        function populateDropdowns() {
+            const lang = state.settings.language;
+            DOMElements.deitySelector.innerHTML = DEITIES.map(d => `<option value="${d.id}">${d['name_'+lang]}</option>`).join('');
+            DOMElements.themeSelector.innerHTML = THEMES.map(theme => `<option value="${theme.id}">${theme['name_'+lang]}</option>`).join('');
+            const t = TRANSLATIONS[lang];
+            DOMElements.soundModeSelector.innerHTML = `<option value="mala_completion">${t.optSoundMala}</option><option value="every_blink">${t.optSoundTick}</option><option value="none">${t.optSoundNone}</option>`;
         }
 
         function renderDashboard() {
+            DOMElements.chantingView.classList.add('hidden');
+            DOMElements.sidebar.classList.add('hidden');
+            DOMElements.dashboardView.classList.remove('hidden');
+
             const allTimeStats = calculateAllTimeStats();
             const grandTotal = Object.values(allTimeStats).reduce((sum, d) => sum + d.raw_chants, 0);
             const today = new Date().toISOString().split('T')[0];
@@ -449,76 +547,120 @@
              const lang = state.settings.language; const t = TRANSLATIONS[lang];
              if (state.user) { 
                 DOMElements.userInfoContainer.innerHTML = `<div class="flex items-center mb-2"><img src="${state.user.photoURL}" alt="User" class="w-10 h-10 rounded-full mr-3"><div class="flex-grow"><p class="font-semibold text-gray-800">${state.user.displayName}</p><button id="sign-out-button" class="text-xs text-red-500 hover:underline">${t.signOutBtn}</button></div></div><button id="view-progress-btn" class="w-full bg-orange-500 text-white font-semibold py-2 px-3 rounded-lg hover:bg-orange-600 transition text-sm flex items-center justify-center disabled:opacity-75"><svg id="progress-btn-spinner" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span id="progress-btn-text">${t.viewProgress}</span></button>`;
-                document.getElementById('sign-out-button').addEventListener('click', handleSignOut); 
-                document.getElementById('view-progress-btn').addEventListener('click', handleViewProgress);
             } else { 
                 DOMElements.userInfoContainer.innerHTML = `<p class="text-xs text-gray-600 mb-2">${t.signInPrompt}</p><button id="sign-in-button" class="w-full bg-blue-500 text-white font-semibold py-2 px-3 rounded-lg hover:bg-blue-600 transition text-sm">${t.signInBtn}</button>`; 
-                document.getElementById('sign-in-button').addEventListener('click', handleSignIn); 
             }
         }
 
+        // --- AUDIO & ANIMATION ---
         function initAudio() { if (audioContext) return; try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { console.error("Web Audio API not supported."); } }
         function playTickSound() { if (!audioContext) return; const o = audioContext.createOscillator(), g = audioContext.createGain(); o.connect(g); g.connect(audioContext.destination); o.type = 'sine'; o.frequency.setValueAtTime(220, audioContext.currentTime); g.gain.setValueAtTime(0.1, audioContext.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.1); o.start(audioContext.currentTime); o.stop(audioContext.currentTime + 0.1); }
         function playBellSound() { if (!audioContext) return; const o = audioContext.createOscillator(), g = audioContext.createGain(); o.connect(g); g.connect(audioContext.destination); o.type = 'sine'; o.frequency.setValueAtTime(1046.50, audioContext.currentTime); g.gain.setValueAtTime(0.5, audioContext.currentTime); g.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 1); o.start(audioContext.currentTime); o.stop(audioContext.currentTime + 1); }
 
         let lastTimestamp = 0;
-
-        function animationLoop(timestamp) {
+        function blinkAnimationLoop(timestamp) {
             if (!state.isBlinking) return;
-            animationFrameId = requestAnimationFrame(animationLoop);
+            animationFrameId = requestAnimationFrame(blinkAnimationLoop);
             if (timestamp - lastTimestamp < state.settings.blinkSpeed) return;
             lastTimestamp = timestamp;
-            const currentDeity = DEITIES.find(d => d.id === state.currentDeityId) || DEITIES[0];
-            if (currentDeity.type === 'blinkable') {
-                blink();
+            const c = DOMElements.deityNameContainer; 
+            c.style.visibility = (c.style.visibility === 'hidden') ? 'visible' : 'hidden'; 
+            if (c.style.visibility === 'visible') { 
+                incrementChant(1); 
             }
         }
         
-        function blink() { const c = DOMElements.deityNameContainer; c.style.visibility = (c.style.visibility === 'hidden') ? 'visible' : 'hidden'; if (c.style.visibility === 'visible') { incrementChant(1); } }
-        
-        function handleKaraoke() {
+        function handleGuidedChant() {
+            const container = DOMElements.deityNameContainer;
             const lang = state.settings.language;
-            const currentTheme = THEMES.find(t => t.id === state.settings.themeId) || THEMES[0];
             const mantra = DEITIES.find(d => d.id === state.currentDeityId)['mantra_'+lang];
-            const mantraParts = mantra.split(/(<br>|\s+)/).filter(p => p.length > 0);
-            const words = mantraParts.filter(p => p !== '<br>' && p.trim() !== '');
-            const wordDuration = state.settings.blinkSpeed / words.length;
+            const cacheKey = `${state.currentDeityId}-${lang}-${state.settings.fontSizePref}-${container.offsetWidth}`;
 
-            DOMElements.deityNameContainer.innerHTML = mantraParts.map((part, i) => {
-                if (part === '<br>') return part;
-                
-                // If it's a word, wrap it in a styled span with an ID for highlighting
-                if (part.trim() !== '') {
-                    return `<span id="word-${i}" class="karaoke-word">${part}</span>`;
-                } 
-                // Otherwise, it's whitespace. Wrap it in a plain span to prevent collapsing by flexbox.
-                else {
-                    return `<span>${part}</span>`;
-                }
-            }).join('');
+            const startAnimation = (schedule) => {
+                const currentTheme = THEMES.find(t => t.id === state.settings.themeId) || THEMES[0];
+                const baseLayerHtml = `<div class="mantra-layer ${currentTheme.mantra}">${mantra}</div>`;
+                const highlightLayerHtml = `<div id="highlight-layer" class="mantra-layer ${currentTheme.highlight}" style="clip-path: inset(100% 0 0 0);"></div>`;
+                container.innerHTML = baseLayerHtml + highlightLayerHtml;
+                document.getElementById('highlight-layer').innerHTML = mantra;
 
-            let currentWordIndex = 0;
-            function highlightWord() {
-                if(!state.isBlinking) return;
-                const currentWordId = mantraParts.indexOf(words[currentWordIndex]);
-                if (currentWordIndex > 0) { 
-                    const prevWordId = mantraParts.indexOf(words[currentWordIndex - 1]);
-                    document.getElementById(`word-${prevWordId}`)?.classList.remove(currentTheme.highlight); 
-                } else { 
-                    document.querySelectorAll('.karaoke-word').forEach(el => el.classList.remove(currentTheme.highlight));
+                let scheduleIndex = 0;
+                function animate() {
+                    if (!state.isBlinking) return;
+                    if (scheduleIndex >= schedule.length) {
+                        incrementChant(1);
+                        karaokeAnimator.start(() => {
+                            if(document.getElementById('highlight-layer')) document.getElementById('highlight-layer').style.clipPath = 'inset(100% 0 0 0)';
+                            handleGuidedChant();
+                        }, 500);
+                        return;
+                    }
+
+                    const currentStep = schedule[scheduleIndex];
+                    const highlightLayer = document.getElementById('highlight-layer');
+                    if (!highlightLayer) return;
+
+                    if(currentStep.type === 'pause') {
+                        highlightLayer.style.clipPath = 'inset(100% 0 0 0)';
+                    } else {
+                        const { top, left, width, height } = currentStep.rect;
+                        const containerRect = container.getBoundingClientRect(); // Re-check container rect in case of resize
+                        const clipPath = `inset(${top}px ${containerRect.width - (left + width)}px ${containerRect.height - (top + height)}px ${left}px)`;
+                        highlightLayer.style.clipPath = clipPath;
+                        if (state.settings.soundMode === 'every_blink') playTickSound();
+                    }
+                    scheduleIndex++;
+                    karaokeAnimator.start(animate, currentStep.duration);
                 }
-                document.getElementById(`word-${currentWordId}`)?.classList.add(currentTheme.highlight);
-                if (state.settings.soundMode === 'every_blink') playTickSound();
-                
-                currentWordIndex++;
-                if (currentWordIndex < words.length) {
-                    karaokeAnimator.start(highlightWord, wordDuration);
-                } else {
-                    incrementChant(1);
-                    karaokeAnimator.start(handleKaraoke, wordDuration);
-                }
+                animate();
+            };
+
+            if (guidedChantScheduleCache[cacheKey]) {
+                startAnimation(guidedChantScheduleCache[cacheKey]);
+                return;
             }
-            highlightWord();
+            
+            // --- Measurement Step (only runs if not cached) ---
+            const measureHtml = mantra.split(/(<br>|[\s।॥]+)/g).filter(p => p).map((token, index) => {
+                if (token !== '<br>' && !/^[\s।॥]+$/.test(token)) {
+                    return `<span class="word-measure" id="measure-${index}">${token}</span>`;
+                }
+                return token;
+            }).join('');
+            container.innerHTML = `<div class="mantra-layer">${measureHtml}</div>`;
+            
+            requestAnimationFrame(() => { // Ensure DOM is painted before measuring
+                const containerRect = container.getBoundingClientRect();
+                if (containerRect.width === 0) return; // Don't measure if not visible
+
+                const schedule = [];
+                const wordElements = container.querySelectorAll('.word-measure');
+                let totalChantLength = 0;
+                wordElements.forEach(el => totalChantLength += el.textContent.length);
+                
+                wordElements.forEach(el => {
+                    const rect = el.getBoundingClientRect();
+                    const duration = (el.textContent.length / totalChantLength) * state.settings.blinkSpeed;
+                    schedule.push({
+                        rect: {
+                            top: rect.top - containerRect.top,
+                            left: rect.left - containerRect.left,
+                            width: rect.width,
+                            height: rect.height,
+                        },
+                        duration: Math.max(75, duration),
+                    });
+                });
+
+                const fullTokens = mantra.split(/(<br>|[\s।॥]+)/g).filter(p=>p);
+                let scheduleInsertOffset = 0;
+                fullTokens.forEach((token, i) => {
+                    if (token === '<br>') { schedule.splice(i + scheduleInsertOffset++, 0, { type: 'pause', duration: 400 }); } 
+                    else if (/[।॥]/.test(token)) { schedule.splice(i + scheduleInsertOffset++, 0, { type: 'pause', duration: 300 }); }
+                });
+
+                guidedChantScheduleCache[cacheKey] = schedule;
+                startAnimation(schedule);
+            });
         }
 
         function incrementChant(count) {
@@ -533,98 +675,72 @@
                 DOMElements.deityNameContainer.classList.add('mala-glow'); 
                 setTimeout(() => DOMElements.deityNameContainer.classList.remove('mala-glow'), 1000); 
             } 
-            updateCounters(); 
-            debouncedSave();
+            updateCounters();
+            clearTimeout(saveTimeout); // Debounce history save separately
+            saveTimeout = setTimeout(saveHistoryState, 2500);
         }
 
         async function updateChantingAnimation() { 
             cancelAnimationFrame(animationFrameId);
             karaokeAnimator?.stop();
             const currentDeity = DEITIES.find(d => d.id === state.currentDeityId) || DEITIES[0];
-            DOMElements.toggleChantingBtn.textContent = TRANSLATIONS[state.settings.language][state.isBlinking ? 'toggleBlinkStop' : 'toggleBlinkStart']; 
+            updateState({ isBlinking: state.isBlinking }); // Trigger UI update for button text
 
             if (!state.isBlinking || document.visibilityState !== 'visible') {
-                if (wakeLock) { await wakeLock.release(); wakeLock = null; } 
-                render(); // Resets karaoke text to normal
+                if (wakeLock) { try { await wakeLock.release(); wakeLock = null; } catch(e) {} } 
+                updateUI(); // Resets everything to its initial state.
                 DOMElements.deityNameContainer.style.visibility = 'visible';
                 return;
             }
 
             if ('wakeLock' in navigator && !wakeLock && !wakeLockFailed) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch (err) { wakeLockFailed = true; console.warn(`Wake Lock failed: ${err.message}`); } } 
             
-            if (currentDeity.type === 'readable') {
-                handleKaraoke();
-            } else {
-                animationFrameId = requestAnimationFrame(animationLoop);
+            if (currentDeity.type === 'paced_readable') {
+                handleGuidedChant();
+            } else { // It's 'blinkable'
+                animationFrameId = requestAnimationFrame(blinkAnimationLoop);
             }
         }
 
-        function handleToggleChanting() { initAudio(); state.isBlinking = !state.isBlinking; updateChantingAnimation(); debouncedSave(); }
-        function handleVisibilityChange() { updateChantingAnimation(); }
-        
+        // --- EVENT HANDLERS ---
+        function handleToggleChanting() { 
+            initAudio(); 
+            state.isBlinking = !state.isBlinking; // Direct mutation, then call animation updater
+            updateChantingAnimation(); 
+        }
+
         function handleSpeedChange(direction) {
             const selector = DOMElements.blinkSpeedSelector;
-            const currentIndex = selector.selectedIndex;
-            const newIndex = currentIndex + direction;
+            const newIndex = selector.selectedIndex + direction;
             if (newIndex >= 0 && newIndex < selector.options.length) {
                 selector.selectedIndex = newIndex;
-                state.settings.blinkSpeed = parseInt(selector.value);
-                render();
+                updateState({ settings: {...state.settings, blinkSpeed: parseInt(selector.value) } });
                 if (state.isBlinking) updateChantingAnimation();
-                debouncedSave();
+                saveState();
             }
         }
-
-        function createHandler(key, isSetting = false) { 
-            return (e) => { 
-                const value = e.target.value; 
-                if(isSetting) state.settings[key] = value; else state[key] = value; 
-                if (key === 'blinkSpeed') state.settings.blinkSpeed = parseInt(value);
-                if (key === 'fontSizePref') state.settings.fontSizePref = value;
-                if (key === 'themeId') state.settings.themeId = value;
-                render(); 
-                if (state.isBlinking) updateChantingAnimation();
-                saveState(); 
-            } 
-        }
-
-        async function handleSignIn() { 
-            if (!auth) return;
-            const btn = document.getElementById('sign-in-button');
-            btn.disabled = true;
-            btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
-            try { await signInWithPopup(auth, new GoogleAuthProvider()); } 
-            catch (error) { 
-                if (error.code === 'auth/unauthorized-domain') DOMElements.errorModal.classList.remove('hidden'); 
-                else console.error('Auth error:', error);
-                renderUserInfo();
-            } 
-        }
-        async function handleSignOut() { 
-            if (!auth) return;
-            const btn = document.getElementById('sign-out-button');
-            btn.disabled = true;
-            btn.textContent = TRANSLATIONS[state.settings.language].loading;
-            await saveState(); 
-            await signOut(auth); 
-        }
-        async function handleViewProgress() {
-            const btn = document.getElementById('view-progress-btn');
-            const spinner = btn.querySelector('svg');
-            const text = btn.querySelector('span');
-            
-            btn.disabled = true;
-            spinner.classList.remove('hidden');
-            text.textContent = TRANSLATIONS[state.settings.language].loading;
-
-            await new Promise(res => setTimeout(res, 200));
-            
-            playTickSound();
-            switchView('dashboard');
-            
-            btn.disabled = false;
-            spinner.classList.add('hidden');
-            text.textContent = TRANSLATIONS[state.settings.language].viewProgress;
+        
+        async function handleAuthAction(e) {
+            const target = e.target;
+            if(target.id === 'sign-in-button') {
+                if (!auth) return;
+                target.disabled = true;
+                target.innerHTML = `<svg class="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+                try { await signInWithPopup(auth, new GoogleAuthProvider()); } 
+                catch (error) { 
+                    if (error.code === 'auth/unauthorized-domain') DOMElements.errorModal.classList.remove('hidden'); 
+                    else console.error('Auth error:', error);
+                    renderUserInfo();
+                }
+            } else if (target.id === 'sign-out-button') {
+                if (!auth) return;
+                target.disabled = true;
+                target.textContent = TRANSLATIONS[state.settings.language].loading;
+                await saveState(true); // Force full save on sign out
+                await signOut(auth);
+            } else if (target.id === 'view-progress-btn') {
+                updateState({ currentView: 'dashboard' });
+            }
         }
 
         function showConfirmation(titleKey, textKey, onConfirm) {
@@ -638,44 +754,56 @@
         }
 
         async function init() {
+            // One-time setup
+            populateDropdowns();
+            
+            // Event Listeners (using delegation for dynamic content)
             DOMElements.openSidebarBtn.addEventListener('click', () => DOMElements.sidebar.classList.remove('-translate-x-full'));
             DOMElements.closeSidebarBtn.addEventListener('click', () => DOMElements.sidebar.classList.add('-translate-x-full'));
             DOMElements.mainContentArea.addEventListener('click', (e) => { if (window.innerWidth < 768 && !DOMElements.sidebar.contains(e.target) && !DOMElements.openSidebarBtn.contains(e.target) ) { DOMElements.sidebar.classList.add('-translate-x-full'); } });
             DOMElements.closeErrorModalBtn.addEventListener('click', () => DOMElements.errorModal.classList.add('hidden'));
-            DOMElements.backToChantingBtn.addEventListener('click', () => switchView('chanting'));
-            
+            DOMElements.backToChantingBtn.addEventListener('click', () => updateState({ currentView: 'chanting'}));
             DOMElements.toggleChantingBtn.addEventListener('click', handleToggleChanting);
-            DOMElements.deitySelector.addEventListener('change', createHandler('currentDeityId'));
-            DOMElements.blinkSpeedSelector.addEventListener('change', createHandler('blinkSpeed', true));
+            
+            DOMElements.deitySelector.addEventListener('change', (e) => { updateState({ currentDeityId: e.target.value }); if(state.isBlinking) updateChantingAnimation(); saveState(); });
+            DOMElements.blinkSpeedSelector.addEventListener('change', (e) => { updateState({ settings: {...state.settings, blinkSpeed: parseInt(e.target.value) }}); if(state.isBlinking) updateChantingAnimation(); saveState(); });
+            DOMElements.fontSizeSelector.addEventListener('change', (e) => { updateState({ settings: {...state.settings, fontSizePref: e.target.value }}); if(state.isBlinking) updateChantingAnimation(); saveState(); });
+            DOMElements.themeSelector.addEventListener('change', (e) => { updateState({ settings: {...state.settings, themeId: e.target.value }}); saveState(); });
+            DOMElements.languageSelector.addEventListener('change', (e) => { updateState({ settings: {...state.settings, language: e.target.value }}); saveState(); });
+            DOMElements.soundModeSelector.addEventListener('change', (e) => { updateState({ settings: {...state.settings, soundMode: e.target.value }}); saveState(); });
+
             DOMElements.speedDownBtn.addEventListener('click', () => handleSpeedChange(-1));
             DOMElements.speedUpBtn.addEventListener('click', () => handleSpeedChange(1));
-            DOMElements.fontSizeSelector.addEventListener('change', createHandler('fontSizePref', true));
-            DOMElements.themeSelector.addEventListener('change', createHandler('themeId', true));
-            DOMElements.languageSelector.addEventListener('change', createHandler('language', true));
-            DOMElements.soundModeSelector.addEventListener('change', createHandler('soundMode', true));
+            
+            DOMElements.userInfoContainer.addEventListener('click', handleAuthAction);
+
             DOMElements.fullscreenBtn.addEventListener('click', () => { 
                 try {
-                    if (!document.fullscreenElement) {
-                        document.documentElement.requestFullscreen();
-                    } else if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                    }
-                } catch (err) {
-                    console.warn("Fullscreen API failed:", err.message, "This may be due to browser permissions or running in an iframe.");
-                }
+                    if (!document.fullscreenElement) { document.documentElement.requestFullscreen(); } 
+                    else if (document.exitFullscreen) { document.exitFullscreen(); }
+                } catch (err) { console.warn("Fullscreen API failed:", err.message); }
             });
-            
             document.addEventListener('fullscreenchange', () => {
                 const t = TRANSLATIONS[state.settings.language];
                 DOMElements.fullscreenBtn.textContent = document.fullscreenElement ? t.exitFullscreen : t.fullscreen;
             });
 
-            DOMElements.deleteAllHistoryBtn.addEventListener('click', () => showConfirmation('confirmDeleteAllTitle', 'confirmDeleteAllText', () => { state.history = {}; saveState(); renderDashboard(); render(); }));
-            DOMElements.detailedHistoryContainer.addEventListener('click', e => { const btn = e.target.closest('.delete-record-btn'); if(btn) { const {date, deity} = btn.dataset; showConfirmation('confirmDeleteRecordTitle', 'confirmDeleteRecordText', () => { delete state.history[date][deity]; if(Object.keys(state.history[date]).length === 0) delete state.history[date]; saveState(); renderDashboard(); render(); }); } });
+            DOMElements.deleteAllHistoryBtn.addEventListener('click', () => showConfirmation('confirmDeleteAllTitle', 'confirmDeleteAllText', () => { state.history = {}; saveState(true); renderDashboard(); updateCounters(); }));
+            DOMElements.detailedHistoryContainer.addEventListener('click', e => { 
+                const btn = e.target.closest('.delete-record-btn'); 
+                if(btn) { 
+                    const {date, deity} = btn.dataset; 
+                    showConfirmation('confirmDeleteRecordTitle', 'confirmDeleteRecordText', () => { 
+                        delete state.history[date][deity]; 
+                        if(Object.keys(state.history[date]).length === 0) delete state.history[date]; 
+                        saveState(true); renderDashboard(); updateCounters(); 
+                    }); 
+                } 
+            });
+            
             DOMElements.modalCancelBtn.addEventListener('click', () => DOMElements.confirmationModal.classList.add('hidden'));
             DOMElements.modalConfirmBtn.addEventListener('click', () => { if(confirmationCallback) confirmationCallback(); DOMElements.confirmationModal.classList.add('hidden'); confirmationCallback = null; });
-
-            document.addEventListener('visibilitychange', handleVisibilityChange);
+            document.addEventListener('visibilitychange', () => { if(state.isBlinking) updateChantingAnimation(); });
             
             karaokeAnimator = {
                 timeoutId: null,
@@ -683,22 +811,21 @@
                 start(handler, duration) { this.stop(); this.timeoutId = setTimeout(handler, duration); }
             };
 
-            render();
+            updateUI(); // Initial render
             DOMElements.appContainer.classList.remove('opacity-0');
 
             if (auth) {
                 onAuthStateChanged(auth, async (user) => {
-                    state.isBlinking = false;
-                    await updateChantingAnimation();
-
+                    if (state.isBlinking) {
+                        state.isBlinking = false;
+                        updateChantingAnimation();
+                    }
                     if (user) {
                         state.user = { uid: user.uid, displayName: user.displayName, photoURL: user.photoURL };
                         await loadStateFromFirebase();
                     } else {
-                        state = getDefaultState(); 
+                        updateState(getDefaultState()); 
                     }
-                    
-                    render();
                 });
             }
         }
