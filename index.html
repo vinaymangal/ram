@@ -34,6 +34,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-wrap: wrap; /* This prevents the karaoke text from overflowing */
             width: 100%;
             height: 100%;
             font-weight: bold;
@@ -485,8 +486,15 @@
 
             DOMElements.deityNameContainer.innerHTML = mantraParts.map((part, i) => {
                 if (part === '<br>') return part;
-                if (part.trim() === '') return ' '; 
-                return `<span id="word-${i}" class="karaoke-word">${part}</span>`;
+                
+                // If it's a word, wrap it in a styled span with an ID for highlighting
+                if (part.trim() !== '') {
+                    return `<span id="word-${i}" class="karaoke-word">${part}</span>`;
+                } 
+                // Otherwise, it's whitespace. Wrap it in a plain span to prevent collapsing by flexbox.
+                else {
+                    return `<span>${part}</span>`;
+                }
             }).join('');
 
             let currentWordIndex = 0;
@@ -495,11 +503,11 @@
                 const currentWordId = mantraParts.indexOf(words[currentWordIndex]);
                 if (currentWordIndex > 0) { 
                     const prevWordId = mantraParts.indexOf(words[currentWordIndex - 1]);
-                    document.getElementById(`word-${prevWordId}`)?.classList.remove(currentTheme.highlight, 'font-bold'); 
+                    document.getElementById(`word-${prevWordId}`)?.classList.remove(currentTheme.highlight); 
                 } else { 
-                    document.querySelectorAll('.karaoke-word').forEach(el => el.classList.remove(currentTheme.highlight, 'font-bold'));
+                    document.querySelectorAll('.karaoke-word').forEach(el => el.classList.remove(currentTheme.highlight));
                 }
-                document.getElementById(`word-${currentWordId}`)?.classList.add(currentTheme.highlight, 'font-bold');
+                document.getElementById(`word-${currentWordId}`)?.classList.add(currentTheme.highlight);
                 if (state.settings.soundMode === 'every_blink') playTickSound();
                 
                 currentWordIndex++;
@@ -646,10 +654,14 @@
             DOMElements.languageSelector.addEventListener('change', createHandler('language', true));
             DOMElements.soundModeSelector.addEventListener('change', createHandler('soundMode', true));
             DOMElements.fullscreenBtn.addEventListener('click', () => { 
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen();
-                } else if (document.exitFullscreen) {
-                    document.exitFullscreen();
+                try {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen();
+                    } else if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                } catch (err) {
+                    console.warn("Fullscreen API failed:", err.message, "This may be due to browser permissions or running in an iframe.");
                 }
             });
             
